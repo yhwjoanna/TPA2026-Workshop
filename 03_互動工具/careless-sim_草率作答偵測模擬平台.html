@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+<meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+<title>草率作答偵測模擬平台</title>
+<style>
+:root{
+  --bg:#f6f7f9;--card:#ffffff;--ink:#1f2933;--muted:#5b6672;--line:#dde2e8;
+  --accent:#1f5f8b;--accent-soft:#e3eef7;--warn:#b7411b;--warn-soft:#fbe9e1;
+  --ok:#2d7a4f;--ok-soft:#e4f3ea;--flag:#c0392b;--radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root{--bg:#15191e;--card:#1e242b;--ink:#e6e9ec;--muted:#a3adb8;--line:#343c46;
+  --accent:#7fb3d9;--accent-soft:#223243;--warn:#e8906a;--warn-soft:#3b2a22;--ok:#7fc49b;--ok-soft:#213529;--flag:#ef7b6d}
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;line-height:1.65;font-size:15px}
+body{padding:0 16px 48px}
+h1,h2,h3{line-height:1.3;text-wrap:balance;margin:0 0 .4em}
+h1{font-size:clamp(1.25rem,2.5vw,1.7rem)}
+h2{font-size:1.2rem;margin-top:.2em}
+h3{font-size:1.02rem;color:var(--accent)}
+p,li,td,th{text-wrap:pretty}
+p{margin:.35em 0}
+.wrap{max-width:1180px;margin:0 auto}
+header{padding:22px 0 10px;border-bottom:1px solid var(--line);margin-bottom:14px}
+header .sub{color:var(--muted);font-size:.93rem}
+nav.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 18px}
+nav.tabs button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:999px;cursor:pointer;font-size:.95rem}
+nav.tabs button.active{background:var(--accent);border-color:var(--accent);color:#fff}
+section.tab{display:none}
+section.tab.active{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.grid-2{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+label{display:block;font-size:.9rem;color:var(--muted);margin-top:8px}
+input[type=number],input[type=text],select{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);font-size:.95rem}
+select[multiple]{height:140px}
+input[type=range]{width:100%}
+input[type=file]{font-size:.9rem}
+button.primary{background:var(--accent);color:#fff;border:none;padding:9px 16px;border-radius:8px;cursor:pointer;font-size:.95rem;margin-top:10px}
+button.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent);padding:7px 12px;border-radius:8px;cursor:pointer;font-size:.9rem;margin:6px 6px 0 0}
+.note{background:var(--accent-soft);border-left:4px solid var(--accent);padding:10px 12px;border-radius:6px;font-size:.92rem;margin:10px 0}
+.warn{background:var(--warn-soft);border-left:4px solid var(--warn);padding:10px 12px;border-radius:6px;font-size:.92rem;margin:10px 0}
+.kpi{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));margin:10px 0}
+.kpi div{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.kpi b{display:block;font-size:1.35rem;line-height:1.2}
+.kpi span{font-size:.82rem;color:var(--muted)}
+.tablewrap{overflow-x:auto;max-width:100%}
+table{border-collapse:collapse;width:100%;font-size:.88rem;min-width:420px}
+th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top;white-space:nowrap}
+th{color:var(--muted);font-weight:600;background:var(--bg);position:sticky;top:0}
+td.seq{font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.08em}
+tr.flag td{background:rgba(192,57,43,.08)}
+tr.truth td:first-child{border-left:3px solid var(--flag)}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:.78rem;background:var(--bg);border:1px solid var(--line)}
+.pill.c{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.pill.a{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+canvas{width:100%;height:auto;background:var(--card);border:1px solid var(--line);border-radius:8px}
+.conf{display:grid;grid-template-columns:auto 1fr 1fr;gap:4px;max-width:420px;font-size:.9rem;margin:8px 0}
+.conf div{padding:6px 8px;border:1px solid var(--line);border-radius:6px;text-align:center}
+.conf .hd{background:var(--bg);color:var(--muted);font-size:.82rem}
+.conf .hit{background:var(--ok-soft)}
+.conf .miss{background:var(--warn-soft)}
+.small{font-size:.85rem;color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start}
+.row > *{flex:1 1 160px}
+code{background:var(--bg);padding:1px 5px;border-radius:4px;font-size:.88em}
+footer{color:var(--muted);font-size:.82rem;margin-top:30px;border-top:1px solid var(--line);padding-top:12px}
+@media (max-width:600px){
+  body{padding:0 16px 40px}
+  .card{padding:13px 14px}
+  table{font-size:.82rem}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>草率作答偵測模擬平台</h1>
+  <div class="sub">2026 台灣心理學會年會工作坊　問卷研究中草率作答的偵測與處理　配套工具。所有運算在瀏覽器本機完成，資料不會上傳。</div>
+</header>
+
+<nav class="tabs">
+  <button data-tab="data" class="active">一、資料</button>
+  <button data-tab="lazr">二、Laz.R 馬可夫鏈</button>
+  <button data-tab="idx">三、間接指標組合</button>
+  <button data-tab="fmm">四、混合模型加反應時間</button>
+  <button data-tab="gib">五、亂語量表機器學習</button>
+  <button data-tab="sum">六、總表與流程草稿</button>
+</nav>
+
+<!-- ============ 資料 ============ -->
+<section class="tab active" id="tab-data">
+<div class="grid-2">
+<div class="card">
+  <h2>模擬資料產生器</h2>
+  <p class="small">產生含真實標籤的作答資料，可用來檢視各方法的命中與誤刪。草率型態的組成依 Biemann et al.（2025）與 Bloy et al.（2025）的分類。</p>
+  <div class="row">
+    <div><label>受訪者人數 N</label><input type="number" id="simN" value="300" min="30" max="5000"></div>
+    <div><label>內容題數 k</label><input type="number" id="simK" value="30" min="6" max="200"></div>
+    <div><label>量尺選項數 s</label><input type="number" id="simS" value="5" min="3" max="11"></div>
+  </div>
+  <div class="row">
+    <div><label>草率作答比例（%）</label><input type="number" id="simP" value="15" min="0" max="80"></div>
+    <div><label>反向題數（置於偶數題）</label><input type="number" id="simR" value="0" min="0" max="100"></div>
+    <div><label>亂語題數 g（卷末）</label><input type="number" id="simG" value="6" min="0" max="20"></div>
+  </div>
+  <label>草率型態組成（相對權重，會自動正規化）</label>
+  <div class="row">
+    <div><label>直線</label><input type="number" id="w_straight" value="35" min="0"></div>
+    <div><label>移動式直線</label><input type="number" id="w_moving" value="10" min="0"></div>
+    <div><label>對角鋸齒</label><input type="number" id="w_diag" value="10" min="0"></div>
+    <div><label>極端交替</label><input type="number" id="w_ext" value="10" min="0"></div>
+    <div><label>低變異交替</label><input type="number" id="w_low" value="10" min="0"></div>
+    <div><label>快速隨機</label><input type="number" id="w_rand" value="25" min="0"></div>
+  </div>
+  <div class="row">
+    <div><label>部分草率（僅後段三分之一）的比例（%）</label><input type="number" id="simPartial" value="25" min="0" max="100"></div>
+    <div><label>隨機種子（留空則每次不同）</label><input type="text" id="simSeed" placeholder="例如 2026"></div>
+  </div>
+  <button class="primary" id="btnSim">產生模擬資料</button>
+</div>
+
+<div class="card">
+  <h2>上傳自己的問卷資料（CSV）</h2>
+  <p class="small">第一列為欄名，每列一位受訪者。檔案只在本機瀏覽器讀取。</p>
+  <input type="file" id="csvFile" accept=".csv,.txt">
+  <div id="csvMap" style="display:none">
+    <label>受訪者編號欄（選填）</label><select id="colId"></select>
+    <label>內容題欄位（按住 Ctrl 或 Cmd 多選，依問卷原始順序）</label><select id="colItems" multiple></select>
+    <label>題目層級反應時間欄位（選填，秒；數量須與內容題相同且順序對應）</label><select id="colRT" multiple></select>
+    <label>亂語題欄位（選填）</label><select id="colGib" multiple></select>
+    <label>真實標籤欄（選填，1 為草率、0 為認真）</label><select id="colTruth"></select>
+    <div class="row">
+      <div><label>量尺選項數 s（留空自動偵測）</label><input type="number" id="csvS" min="2" max="11"></div>
+      <div><label>反向題（內容題中的序號，逗號分隔，例如 2,5,9）</label><input type="text" id="csvRev" placeholder=""></div>
+    </div>
+    <button class="primary" id="btnCsv">載入資料</button>
+  </div>
+</div>
+</div>
+
+<div class="card" id="dataSummary" style="display:none">
+  <h2>目前資料</h2>
+  <div class="kpi" id="dataKpi"></div>
+  <div class="note" id="dataNote"></div>
+  <h3>前 15 筆作答序列（紅邊為真實草率者，括號為型態）</h3>
+  <div class="tablewrap"><table id="previewTbl"></table></div>
+  <button class="ghost" id="btnDownloadSim">下載目前資料（CSV，含真實標籤）</button>
+</div>
+</section>
+
+<!-- ============ Laz.R ============ -->
+<section class="tab" id="tab-lazr">
+<div class="card">
+  <h2>取徑一　Laz.R 一階馬可夫鏈（Biemann et al., 2025）</h2>
+  <p>以作答序列的可預測性量化草率程度：由前一題的作答位置預測下一題。Laz.R 上限為 1（每題都可由前一題完全預測），完全隨機時趨近 1 除以選項數。分數愈高愈可疑。切點依樣本自訂：將 Laz.R 由高至低排序，曲線先陡降後轉平的轉折處即為膝點（kneedle，此處以弦距法求膝點）。</p>
+  <div class="note">只對位置性規律有效（直線與各類鋸齒），對隨機作答無偵測力；建議至少 20 題同量尺題目。本分頁使用原始作答（不反向計分），與原文一致。</div>
+</div>
+<div class="grid-2">
+  <div class="card">
+    <h3>排序曲線與切點</h3>
+    <canvas id="cvLaz" width="640" height="320"></canvas>
+    <label>切點位置（標記前多少百分比）：<span id="lazPctLabel"></span></label>
+    <input type="range" id="lazPct" min="0" max="50" step="0.5" value="5">
+    <button class="ghost" id="btnLazKnee">改用膝點（kneedle）</button>
+    <div class="small" id="lazKneeInfo"></div>
+  </div>
+  <div class="card">
+    <h3>偵測結果</h3>
+    <div id="lazResult"></div>
+  </div>
+</div>
+<div class="card">
+  <h3>被標記者（依 Laz.R 由高至低）</h3>
+  <div class="tablewrap"><table id="lazTbl"></table></div>
+</div>
+</section>
+
+<!-- ============ 指標組合 ============ -->
+<section class="tab" id="tab-idx">
+<div class="card">
+  <h2>取徑二　間接指標的系統性比較與組合（Goldammer et al., 2024）</h2>
+  <p>計算七個事後間接指標，各自以樣本百分位設切點，再以旗標數組合。Goldammer et al. 的建議配置：個人內一致性至少一個（首選重抽樣個人信度 RPR）、常模式至少一個（Mahalanobis 距離或個人總分相關）、無母數 person-fit 至少一個（G normed）。longstring 與 IRV 列為不建議，此處保留供對照。</p>
+  <div class="warn">RPR 與 PsychSyn 為依原文描述的示意實作；Mahalanobis 距離與個人總分相關的常模由全樣本建立，草率比例高時常模受污染。反向題若已指定，本分頁與後續分頁使用反向計分後的資料。</div>
+</div>
+<div class="card">
+  <div class="row">
+    <div><label>各指標切點百分位（單尾，%）</label><input type="number" id="idxPct" value="5" min="1" max="30"></div>
+    <div><label>PsychSyn 題對門檻 |r| 至少</label><input type="number" id="synCrit" value="0.6" min="0.2" max="0.95" step="0.05"></div>
+    <div><label>組合規則：至少幾個指標同時標記</label><input type="number" id="idxMinFlags" value="2" min="1" max="7"></div>
+    <div><label>納入組合的指標</label>
+      <select id="idxCombo" multiple style="height:150px">
+        <option value="rpr" selected>RPR 重抽樣個人信度（低可疑）</option>
+        <option value="mahal" selected>Mahalanobis 距離（高可疑）</option>
+        <option value="gnorm" selected>G normed 無母數 person-fit（高可疑）</option>
+        <option value="psychsyn">PsychSyn 同義題（低可疑）</option>
+        <option value="rpbis">個人總分相關 rpbis（低可疑）</option>
+        <option value="longstring">最大 longstring（高可疑）</option>
+        <option value="irv">IRV 個人內標準差（低可疑）</option>
+      </select></div>
+  </div>
+  <button class="primary" id="btnIdx">計算指標</button>
+</div>
+<div class="card">
+  <h3>各指標單獨表現</h3>
+  <div class="tablewrap"><table id="idxPerf"></table></div>
+  <p class="small">AUC 以 Mann–Whitney 統計量計算，僅在資料含真實標籤時顯示；方向已依各指標的可疑端調整，.5 為隨機水準。</p>
+</div>
+<div class="grid-2">
+  <div class="card"><h3>組合結果</h3><div id="idxResult"></div></div>
+  <div class="card"><h3>指標分布（選擇一個指標）</h3>
+    <select id="idxPlotSel"></select>
+    <canvas id="cvIdx" width="640" height="300" style="margin-top:8px"></canvas></div>
+</div>
+<div class="card">
+  <h3>被組合規則標記者</h3>
+  <div class="tablewrap"><table id="idxTbl"></table></div>
+</div>
+</section>
+
+<!-- ============ FMM ============ -->
+<section class="tab" id="tab-fmm">
+<div class="card">
+  <h2>取徑三　混合模型結合反應時間（Zhang et al., 2025）</h2>
+  <p>原文在 CFA 架構內聯合建模作答內容與題目層級反應時間：注意組的作答依單因素模型生成、反應時間依對數常態模型；草率組的作答與時間皆為隨機雜訊，並以 MCMC 估計。核心辨識限制為注意組的時間截距高於草率組（認真作答較慢）。</p>
+  <div class="warn">本分頁為教學用簡化版：以 EM 演算法估計兩類混合模型，注意組的每題作答以常態分布近似（未建模因素結構）、對數反應時間以常態分布建模；草率組的作答為離散均勻分布、時間為較快的常態分布。結果用以體會「作答加時間」的分工邏輯，不等同原文的貝氏估計。需要題目層級反應時間，缺少時無法執行。</div>
+</div>
+<div class="card">
+  <div class="row">
+    <div><label>起始草率比例（EM 初始值）</label><input type="number" id="fmmPi" value="0.15" min="0.01" max="0.6" step="0.01"></div>
+    <div><label>分類門檻（後驗草率機率至少）</label><input type="number" id="fmmThr" value="0.5" min="0.05" max="0.95" step="0.05"></div>
+    <div><label>最大迭代次數</label><input type="number" id="fmmIter" value="200" min="20" max="1000"></div>
+  </div>
+  <button class="primary" id="btnFmm">估計混合模型</button>
+</div>
+<div class="grid-2">
+  <div class="card"><h3>估計結果</h3><div id="fmmResult"></div></div>
+  <div class="card"><h3>平均反應時間的分布（依分類著色）</h3><canvas id="cvFmm" width="640" height="300"></canvas></div>
+</div>
+<div class="card">
+  <h3>被分類為草率者（依後驗機率由高至低）</h3>
+  <div class="tablewrap"><table id="fmmTbl"></table></div>
+</div>
+</section>
+
+<!-- ============ GibML ============ -->
+<section class="tab" id="tab-gib">
+<div class="card">
+  <h2>取徑四　亂語量表與機器學習 GibML（Bloy et al., 2025）</h2>
+  <p>亂語題無法閱讀理解，對其作答必然不基於題意，因此天然構成草率作答的正例標籤。原文將每位受訪者的內容量表作答（標籤 0）與亂語量表作答（標籤 1）一併輸入支持向量機（radial kernel），學習兩者的型態差異後，回頭把內容量表中作答得更像亂語者判為草率。</p>
+  <div class="warn">本分頁為簡化版：將內容量表切成與亂語量表等長的區段，以每個區段的型態特徵（平均數、標準差、最長連續、Laz.R、極端與中點比例、相異值數、相鄰差異）訓練 k 最近鄰分類器，再以各區段分數的平均作為個人分數，而非以原始作答訓練 SVM。由於每位草率者的內容區段（標籤 0）與亂語區塊（標籤 1）型態相同，草率者的分數理論上落在 0.5 附近而非接近 1，門檻宜設在 0.3 左右並對照分布圖調整。模擬資料中認真作答者對亂語題的作答設定為偏低或中立（原文質性觀察），草率者則延續其型態。資料若無亂語題則無法執行。</div>
+</div>
+<div class="card">
+  <div class="row">
+    <div><label>分類器</label><select id="gibModel"><option value="knn">k 最近鄰（非線性，預設）</option><option value="lr">邏輯斯迴歸（線性，對照用）</option></select></div>
+    <div><label>最近鄰數 k</label><input type="number" id="gibK" value="15" min="3" max="101" step="2"></div>
+    <div><label>判定門檻（像亂語的分數至少）</label><input type="number" id="gibThr" value="0.3" min="0.05" max="0.95" step="0.05"></div>
+  </div>
+  <button class="primary" id="btnGib">訓練並判定</button>
+</div>
+<div class="grid-2">
+  <div class="card"><h3>結果</h3><div id="gibResult"></div></div>
+  <div class="card"><h3>內容量表像亂語的機率分布</h3><canvas id="cvGib" width="640" height="300"></canvas></div>
+</div>
+<div class="card">
+  <h3>被判定者（依機率由高至低）</h3>
+  <div class="tablewrap"><table id="gibTbl"></table></div>
+</div>
+</section>
+
+<!-- ============ 總表 ============ -->
+<section class="tab" id="tab-sum">
+<div class="card">
+  <h2>四種取徑的旗標總表</h2>
+  <p>各分頁執行後，此處彙整每位受訪者在四種取徑下的標記情形。四種取徑的偵測原理互補：Laz.R 抓型態化、指標組合抓隨機與不一致、混合模型抓快速隨機、GibML 抓與亂語型態相似者。原則上應先逐案檢視被標記者的原始作答序列，再決定處置。</p>
+  <div class="kpi" id="sumKpi"></div>
+  <div class="tablewrap"><table id="sumTbl"></table></div>
+  <button class="ghost" id="btnDownloadFlags">下載旗標總表（CSV）</button>
+</div>
+<div class="card">
+  <h2>偵測與處理流程草稿</h2>
+  <p class="small">依工作坊互動二的任務填寫，可複製到自己的分析計畫。</p>
+  <div class="grid-2">
+    <div>
+      <label>資料條件盤點</label>
+      <select id="plan_rev"><option>有反向題</option><option>無反向題</option></select>
+      <select id="plan_pairs" style="margin-top:6px"><option>有至少三對強相關題對</option><option>無強相關題對</option></select>
+      <select id="plan_rt" style="margin-top:6px"><option>無題目層級反應時間</option><option>有題目層級反應時間</option></select>
+      <select id="plan_gib" style="margin-top:6px"><option>無亂語題或 bogus 題</option><option>有亂語題</option><option>有 8 題以上 bogus 題</option></select>
+    </div>
+    <div>
+      <label>切點決定方式</label>
+      <select id="plan_cut"><option>各指標以 kneedle 求樣本特定切點</option><option>固定百分位（如前 5%）</option><option>文獻通用切點（不建議）</option></select>
+      <label>處置方式</label>
+      <select id="plan_act"><option>逐案檢視後刪除，並做敏感度分析</option><option>以後驗機率加權保留全樣本</option><option>僅捨棄變化點之後的題目</option></select>
+    </div>
+  </div>
+  <button class="ghost" id="btnPlan">產生流程草稿</button>
+  <pre id="planOut" style="white-space:pre-wrap;background:var(--bg);padding:12px;border-radius:8px;margin-top:10px;font-family:inherit"></pre>
+</div>
+</section>
+
+<footer>
+依據文獻：Biemann et al. (2025, ORM)；Goldammer et al. (2024, BRM)；Zhang et al. (2025, BRM)；Bloy et al. (2025, AMPPS)。教學用簡化實作，正式分析請以原文提供的 R、Stata、JAGS 程式碼與 Shiny-CR-App 為準。
+</footer>
+</div>
+
+<script id="core">
+/* ===================== 核心運算（純函數，可獨立測試） ===================== */
+const CR = (() => {
+  // ---- 亂數（可設種子）----
+  let _rng = Math.random;
+  function seed(s){
+    if(s===undefined||s===null||s===''){_rng=Math.random;return;}
+    let h=2166136261>>>0; const str=String(s);
+    for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}
+    _rng=function(){h+=0x6D2B79F5;let t=h;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};
+  }
+  const rnd=()=>_rng();
+  function randn(){let u=0,v=0;while(u===0)u=rnd();while(v===0)v=rnd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+  const clampInt=(x,lo,hi)=>Math.max(lo,Math.min(hi,Math.round(x)));
+
+  // ---- 基本統計 ----
+  const mean=a=>a.reduce((s,x)=>s+x,0)/a.length;
+  function sd(a){if(a.length<2)return 0;const m=mean(a);return Math.sqrt(a.reduce((s,x)=>s+(x-m)*(x-m),0)/(a.length-1));}
+  function cor(a,b){const n=a.length;if(n<3)return NaN;const ma=mean(a),mb=mean(b);let sab=0,saa=0,sbb=0;for(let i=0;i<n;i++){const da=a[i]-ma,db=b[i]-mb;sab+=da*db;saa+=da*da;sbb+=db*db;}if(saa===0||sbb===0)return NaN;return sab/Math.sqrt(saa*sbb);}
+  function quantile(a,q){const s=[...a].filter(x=>!isNaN(x)).sort((x,y)=>x-y);if(!s.length)return NaN;const pos=(s.length-1)*q,lo=Math.floor(pos),hi=Math.ceil(pos);return s[lo]+(s[hi]-s[lo])*(pos-lo);}
+  function auc(scores,truth){ // truth 1 = 草率；高分視為可疑
+    const pos=[],neg=[];scores.forEach((s,i)=>{if(isNaN(s))return;(truth[i]?pos:neg).push(s);});
+    if(!pos.length||!neg.length)return NaN;let u=0;
+    for(const p of pos)for(const n of neg){if(p>n)u+=1;else if(p===n)u+=0.5;}
+    return u/(pos.length*neg.length);
+  }
+  function confusion(flags,truth){const r={tp:0,fp:0,fn:0,tn:0};for(let i=0;i<flags.length;i++){const f=!!flags[i],t=!!truth[i];if(f&&t)r.tp++;else if(f&&!t)r.fp++;else if(!f&&t)r.fn++;else r.tn++;}r.sens=r.tp/(r.tp+r.fn||1);r.spec=r.tn/(r.tn+r.fp||1);r.ppv=r.tp/(r.tp+r.fp||1);return r;}
+
+  // ---- Laz.R（Biemann et al., 2025）----
+  function lazR(x){
+    const n=x.length;if(n<2)return NaN;const tr={};const rows={};
+    for(let i=0;i<n-1;i++){const a=x[i],b=x[i+1];if(a==null||b==null||isNaN(a)||isNaN(b))continue;const k=a+'|'+b;tr[k]=(tr[k]||0)+1;rows[a]=(rows[a]||0)+1;}
+    let s=0;for(const k in tr){const a=k.split('|')[0];s+=tr[k]*tr[k]/rows[a];}
+    return s/(n-1);
+  }
+  // 膝點：對由高至低排序的曲線，取距首尾連線最遠的點（Kneedle 差分曲線的等價作法）
+  function knee(sortedDesc){
+    const n=sortedDesc.length;if(n<3)return 0;
+    const x0=0,y0=sortedDesc[0],x1=n-1,y1=sortedDesc[n-1];
+    const ymax=Math.max(y0,y1),ymin=Math.min(y0,y1),yr=(ymax-ymin)||1;
+    let best=0,bi=0;
+    for(let i=0;i<n;i++){const xn=i/(n-1),yn=(sortedDesc[i]-ymin)/yr;const ya=(y0-ymin)/yr,yb=(y1-ymin)/yr;
+      // 直線 (0,ya)-(1,yb) 的垂直距離
+      const d=Math.abs((yb-ya)*xn-(yn-ya))/Math.sqrt((yb-ya)*(yb-ya)+1);if(d>best){best=d;bi=i;}}
+    return bi;
+  }
+
+  // ---- 間接指標 ----
+  function longstring(x){let best=1,cur=1;for(let i=1;i<x.length;i++){if(x[i]===x[i-1]){cur++;if(cur>best)best=cur;}else cur=1;}return best;}
+  const irv=x=>sd(x);
+  function colMeans(X){const k=X[0].length,m=new Array(k).fill(0);for(const r of X)for(let j=0;j<k;j++)m[j]+=r[j];return m.map(v=>v/X.length);}
+  function covMat(X){const n=X.length,k=X[0].length,m=colMeans(X);const C=Array.from({length:k},()=>new Array(k).fill(0));
+    for(const r of X)for(let i=0;i<k;i++){const di=r[i]-m[i];for(let j=i;j<k;j++)C[i][j]+=di*(r[j]-m[j]);}
+    for(let i=0;i<k;i++)for(let j=i;j<k;j++){C[i][j]/=(n-1);C[j][i]=C[i][j];}return {C,m};}
+  function invert(A){const n=A.length;const M=A.map((r,i)=>[...r,...Array.from({length:n},(_,j)=>i===j?1:0)]);
+    for(let c=0;c<n;c++){let p=c;for(let r=c+1;r<n;r++)if(Math.abs(M[r][c])>Math.abs(M[p][c]))p=r;[M[c],M[p]]=[M[p],M[c]];
+      let pv=M[c][c];if(Math.abs(pv)<1e-10){M[c][c]+=1e-6;pv=M[c][c];}
+      for(let j=0;j<2*n;j++)M[c][j]/=pv;
+      for(let r=0;r<n;r++){if(r===c)continue;const f=M[r][c];if(f===0)continue;for(let j=0;j<2*n;j++)M[r][j]-=f*M[c][j];}}
+    return M.map(r=>r.slice(n));}
+  function mahalanobis(X){const {C,m}=covMat(X);const k=X[0].length;for(let i=0;i<k;i++)C[i][i]+=1e-4;const Ci=invert(C);
+    return X.map(r=>{const d=r.map((v,j)=>v-m[j]);let s=0;for(let i=0;i<k;i++){let t=0;for(let j=0;j<k;j++)t+=Ci[i][j]*d[j];s+=d[i]*t;}return s;});}
+  function rpbis(X){const m=colMeans(X);return X.map(r=>cor(r,m));}
+  function corrMatrix(X){const k=X[0].length;const cols=Array.from({length:k},(_,j)=>X.map(r=>r[j]));const R=Array.from({length:k},()=>new Array(k).fill(1));
+    for(let i=0;i<k;i++)for(let j=i+1;j<k;j++){R[i][j]=R[j][i]=cor(cols[i],cols[j]);}return R;}
+  function psychsyn(X,crit){const k=X[0].length,R=corrMatrix(X);const pairs=[];
+    for(let i=0;i<k;i++)for(let j=i+1;j<k;j++){if(!isNaN(R[i][j])&&R[i][j]>=crit)pairs.push([i,j]);}
+    if(pairs.length<2)return {scores:X.map(()=>NaN),pairs:pairs.length};
+    const scores=X.map(r=>cor(pairs.map(p=>r[p[0]]),pairs.map(p=>r[p[1]])));return {scores,pairs:pairs.length};}
+  // RPR：依題目平均數相近配對，每次隨機把每對中的一題分到 A、另一題到 B，計算個人在 A 與 B 的作答相關，重複取平均
+  function rpr(X,reps=100){const k=X[0].length,m=colMeans(X);const order=m.map((v,j)=>[v,j]).sort((a,b)=>a[0]-b[0]).map(p=>p[1]);
+    const npair=Math.floor(k/2);const acc=X.map(()=>0),cnt=X.map(()=>0);
+    for(let r=0;r<reps;r++){const A=[],B=[];for(let p=0;p<npair;p++){const i=order[2*p],j=order[2*p+1];if(rnd()<0.5){A.push(i);B.push(j);}else{A.push(j);B.push(i);}}
+      X.forEach((row,ii)=>{const c=cor(A.map(j=>row[j]),B.map(j=>row[j]));if(!isNaN(c)){acc[ii]+=c;cnt[ii]++;}});}
+    return acc.map((v,i)=>cnt[i]?v/cnt[i]:NaN);}
+  // G normed：題目依平均數由高到低排序後，計算「較不受支持的題目卻得到較高作答」的配對數，除以最大可能配對數
+  function gnormed(X){const k=X[0].length,m=colMeans(X);const order=m.map((v,j)=>[v,j]).sort((a,b)=>b[0]-a[0]).map(p=>p[1]);const tot=k*(k-1)/2;
+    return X.map(r=>{let e=0;for(let a=0;a<k;a++)for(let b=a+1;b<k;b++){if(r[order[b]]>r[order[a]])e++;}return e/tot;});}
+
+  // ---- 簡化混合模型 EM（作答 + 對數反應時間）----
+  function fmmEM(X,T,s,pi0=0.15,maxIter=200){
+    const n=X.length,k=X[0].length;const L=T.map(r=>r.map(t=>Math.log(Math.max(t,0.05))));
+    const meanL=L.map(r=>mean(r));const thr=quantile(meanL,pi0);
+    let post=meanL.map(v=>v<=thr?0.9:0.1);
+    let pi=pi0,mu=new Array(k).fill(0),sg=new Array(k).fill(1),tau=new Array(k).fill(0),st=1,tauC=0,stC=1;
+    const logU=Math.log(1/s);const ln2pi=Math.log(2*Math.PI);
+    const lnorm=(x,m,sdv)=>-0.5*ln2pi-Math.log(sdv)-0.5*((x-m)/sdv)**2;
+    let ll=-Infinity,iters=0;
+    for(let it=0;it<maxIter;it++){
+      // M-step
+      const wA=post.map(p=>1-p),wC=post;const sA=wA.reduce((a,b)=>a+b,0),sC=wC.reduce((a,b)=>a+b,0);
+      pi=sC/n;
+      for(let j=0;j<k;j++){let m=0;for(let i=0;i<n;i++)m+=wA[i]*X[i][j];m/=sA;let v=0;for(let i=0;i<n;i++)v+=wA[i]*(X[i][j]-m)**2;v/=sA;mu[j]=m;sg[j]=Math.sqrt(Math.max(v,0.09));
+        let t=0;for(let i=0;i<n;i++)t+=wA[i]*L[i][j];tau[j]=t/sA;}
+      let vt=0;for(let i=0;i<n;i++)for(let j=0;j<k;j++)vt+=wA[i]*(L[i][j]-tau[j])**2;st=Math.sqrt(Math.max(vt/(sA*k),0.01));
+      let tc=0;for(let i=0;i<n;i++)for(let j=0;j<k;j++)tc+=wC[i]*L[i][j];tauC=tc/(sC*k||1);
+      let vc=0;for(let i=0;i<n;i++)for(let j=0;j<k;j++)vc+=wC[i]*(L[i][j]-tauC)**2;stC=Math.sqrt(Math.max(vc/(sC*k||1),0.01));
+      const minTau=Math.min(...tau);if(tauC>=minTau-0.05)tauC=minTau-0.05; // 辨識限制：草率組較快
+      // E-step
+      let newLL=0;const np=new Array(n);
+      for(let i=0;i<n;i++){let la=Math.log(1-pi),lc=Math.log(pi);
+        for(let j=0;j<k;j++){la+=lnorm(X[i][j],mu[j],sg[j])+lnorm(L[i][j],tau[j],st);lc+=logU+lnorm(L[i][j],tauC,stC);}
+        const mx=Math.max(la,lc);const den=Math.exp(la-mx)+Math.exp(lc-mx);np[i]=Math.exp(lc-mx)/den;newLL+=mx+Math.log(den);}
+      post=np;iters=it+1;if(Math.abs(newLL-ll)<1e-6){ll=newLL;break;}ll=newLL;}
+    return {post,pi,tau,tauC,st,stC,ll,iters};}
+
+  // ---- GibML 簡化版：型態特徵 + 邏輯斯迴歸 ----
+  function patternFeatures(x,s){const n=x.length;const mid=(s+1)/2;let diff=0;for(let i=1;i<n;i++)diff+=Math.abs(x[i]-x[i-1]);
+    return [mean(x),sd(x),longstring(x)/n,lazR(x),x.filter(v=>v===s).length/n,x.filter(v=>v===1).length/n,x.filter(v=>Math.abs(v-mid)<0.51).length/n,new Set(x).size/s,n>1?diff/(n-1):0];}
+  // 將內容量表切成與亂語量表等長的區段，使兩類訓練樣本長度一致（避免分類器學到區塊長度）
+  function chunks(x,g){const out=[];if(x.length<=g){out.push(x.slice());return out;}for(let st=0;st+g<=x.length;st+=g)out.push(x.slice(st,st+g));if(x.length%g>=Math.ceil(g/2))out.push(x.slice(x.length-g));return out;}
+  function logistic(F,y,iters=600,lr=0.1,l2=0.01){const n=F.length,d=F[0].length;const mu=new Array(d).fill(0),sdv=new Array(d).fill(1);
+    for(let j=0;j<d;j++){const col=F.map(r=>r[j]);mu[j]=mean(col);sdv[j]=sd(col)||1;}
+    const Z=F.map(r=>r.map((v,j)=>(v-mu[j])/sdv[j]));let w=new Array(d).fill(0),b=0;
+    for(let it=0;it<iters;it++){const gw=new Array(d).fill(0);let gb=0;
+      for(let i=0;i<n;i++){let z=b;for(let j=0;j<d;j++)z+=w[j]*Z[i][j];const p=1/(1+Math.exp(-z));const e=p-y[i];gb+=e;for(let j=0;j<d;j++)gw[j]+=e*Z[i][j];}
+      for(let j=0;j<d;j++)w[j]-=lr*(gw[j]/n+l2*w[j]);b-=lr*gb/n;}
+    const predict=f=>{let z=b;for(let j=0;j<d;j++)z+=w[j]*((f[j]-mu[j])/sdv[j]);return 1/(1+Math.exp(-z));};
+    return {w,b,predict};}
+
+  // k 最近鄰：標準化特徵空間中最近 k 筆訓練樣本的亂語標籤比例（非線性，較能捕捉「與亂語區塊長得一樣」的型態）
+  function knn(F,y,k=15){const n=F.length,d=F[0].length;const mu=new Array(d).fill(0),sdv=new Array(d).fill(1);
+    for(let j=0;j<d;j++){const col=F.map(r=>r[j]);mu[j]=mean(col);sdv[j]=sd(col)||1;}
+    const Z=F.map(r=>r.map((v,j)=>(v-mu[j])/sdv[j]));
+    const predict=f=>{const z=f.map((v,j)=>(v-mu[j])/sdv[j]);const ds=new Array(n);for(let i=0;i<n;i++){let s=0;for(let j=0;j<d;j++){const t=z[j]-Z[i][j];s+=t*t;}ds[i]=s;}
+      const idx=Array.from({length:n},(_,i)=>i).sort((a,b)=>ds[a]-ds[b]).slice(0,k);return idx.reduce((a,i)=>a+y[i],0)/k;};
+    return {predict};}
+
+  // ---- 模擬資料 ----
+  const TYPES={straight:'直線',moving:'移動式直線',diag:'對角鋸齒',ext:'極端交替',low:'低變異交替',rand:'快速隨機'};
+  function patternSeq(type,len,s){const out=[];
+    if(type==='straight'){const pref=[1,Math.ceil(s/2),s];const v=rnd()<0.6?pref[Math.floor(rnd()*3)]:1+Math.floor(rnd()*s);for(let i=0;i<len;i++)out.push(v);}
+    else if(type==='moving'){let v=1+Math.floor(rnd()*s);let seg=3+Math.floor(rnd()*5);for(let i=0;i<len;i++){out.push(v);if(--seg===0){v=1+Math.floor(rnd()*s);seg=3+Math.floor(rnd()*5);}}}
+    else if(type==='diag'){let v=1+Math.floor(rnd()*s),dir=1;for(let i=0;i<len;i++){out.push(v);if(v===s)dir=-1;if(v===1)dir=1;v+=dir;}}
+    else if(type==='ext'){let a=rnd()<0.5;for(let i=0;i<len;i++){out.push(a?s:1);a=!a;}}
+    else if(type==='low'){const base=1+Math.floor(rnd()*(s-1));let a=rnd()<0.5;for(let i=0;i<len;i++){out.push(a?base:base+1);a=!a;}}
+    else{for(let i=0;i<len;i++)out.push(1+Math.floor(rnd()*s));}
+    return out;}
+  // 三個分量表（輪流指派題目），分量表平均數不同、潛在特質間相關約 .3；供 RPR、PsychSyn、Mahalanobis 有可辨的結構
+  function attentiveSeq(thetas,itemMeans,revSet,s){return itemMeans.map((m,j)=>{const th=thetas[j%3];let v=clampInt(m+0.9*th*((s-1)/4)+randn()*0.7*((s-1)/4),1,s);if(revSet.has(j))v=s+1-v;return v;});}
+  function simulate(o){
+    seed(o.seed);const {N,k,s,p,g,partial}=o;const nRev=o.nRev||0;
+    const revSet=new Set();for(let j=1,c=0;j<k&&c<nRev;j+=2,c++)revSet.add(j);
+    const subMean=[0.35,0.55,0.72];const itemMeans=Array.from({length:k},(_,j)=>1+(s-1)*(subMean[j%3]+0.08*(rnd()-0.5)));
+    const w=o.weights;const types=Object.keys(w);const tot=types.reduce((a,t)=>a+w[t],0)||1;
+    const pickType=()=>{let u=rnd()*tot;for(const t of types){u-=w[t];if(u<=0)return t;}return types[types.length-1];};
+    const rows=[];const nC=Math.round(N*p);
+    for(let i=0;i<N;i++){
+      const careless=i<nC;const g0=randn();const thetas=[0,1,2].map(()=>Math.sqrt(0.3)*g0+Math.sqrt(0.7)*randn());let resp=attentiveSeq(thetas,itemMeans,revSet,s);let type='';let partialFlag=false;
+      let rt=itemMeans.map(()=>Math.exp(Math.log(6)+randn()*0.45));
+      // 認真作答者對亂語題：多數給最低分或中立，少數略有變化（依 Bloy et al. 的質性觀察）
+      let gib=Array.from({length:g},()=>{const u=rnd();return u<0.6?1:(u<0.85?Math.ceil(s/2):1+Math.floor(rnd()*Math.ceil(s/2)));});
+      if(careless){type=pickType();partialFlag=rnd()<partial;const start=partialFlag?Math.floor(k*2/3):0;const seq=patternSeq(type,k+g-start,s);
+        for(let j=start;j<k;j++){resp[j]=seq[j-start];rt[j]=Math.exp(Math.log(type==='rand'?2.3:1.8)+randn()*0.4);}
+        if(g>0){const tail=seq.slice(k-start);gib=tail;}}
+      rows.push({id:'R'+String(i+1).padStart(4,'0'),resp,rt,gib,truth:careless?1:0,type:careless?TYPES[type]+(partialFlag?'（部分）':''):''});}
+    // 打亂順序
+    for(let i=rows.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[rows[i],rows[j]]=[rows[j],rows[i]];}
+    return {rows,s,k,g,rev:[...revSet],hasRT:true,hasTruth:true,source:'模擬'};}
+
+  return {seed,rnd,mean,sd,cor,quantile,auc,confusion,lazR,knee,longstring,irv,mahalanobis,rpbis,psychsyn,rpr,gnormed,fmmEM,patternFeatures,chunks,logistic,knn,simulate,TYPES};
+})();
+if(typeof module!=='undefined')module.exports=CR;
+</script>
+
+<script>
+/* ===================== 介面 ===================== */
+const $=id=>document.getElementById(id);
+let D=null; // 目前資料
+const FLAGS={lazr:null,idx:null,fmm:null,gib:null};
+
+document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');
+  document.querySelectorAll('section.tab').forEach(x=>x.classList.remove('active'));$('tab-'+b.dataset.tab).classList.add('active');
+  if(b.dataset.tab==='sum')renderSummary();}));
+
+function recoded(){ // 反向計分後的內容作答
+  if(!D)return [];const rev=new Set(D.rev);return D.rows.map(r=>r.resp.map((v,j)=>rev.has(j)?D.s+1-v:v));}
+function truthArr(){return D.hasTruth?D.rows.map(r=>r.truth):null;}
+function fmt(x,d=2){return (x==null||isNaN(x))?'—':Number(x).toFixed(d);}
+function seqStr(a,max=40){const s=a.slice(0,max).join(' ');return a.length>max?s+' …':s;}
+
+function confHTML(flags,truth,label){
+  const nf=flags.filter(Boolean).length;
+  let h=`<div class="kpi"><div><b>${nf}</b><span>被標記人數（${(100*nf/flags.length).toFixed(1)}%）</span></div>`;
+  if(truth){const c=CR.confusion(flags,truth);
+    h+=`<div><b>${fmt(c.sens*100,0)}%</b><span>敏感度（抓到草率）</span></div><div><b>${fmt(c.spec*100,0)}%</b><span>特異度（保住認真）</span></div><div><b>${fmt(c.ppv*100,0)}%</b><span>被標記者中確為草率</span></div></div>`;
+    h+=`<div class="conf"><div class="hd"></div><div class="hd">真實草率</div><div class="hd">真實認真</div><div class="hd">被標記</div><div class="hit">命中 ${c.tp}</div><div class="miss">誤刪 ${c.fp}</div><div class="hd">未標記</div><div class="miss">漏報 ${c.fn}</div><div class="hit">正確保留 ${c.tn}</div></div>`;}
+  else h+=`</div><p class="small">資料無真實標籤，僅顯示標記人數。</p>`;
+  return h;}
+
+function drawCurve(cv,ys,opts){ // 由高至低排序曲線
+  const ctx=cv.getContext('2d');const W=cv.width,H=cv.height;ctx.clearRect(0,0,W,H);
+  const pad={l:52,r:14,t:14,b:34};const n=ys.length;if(!n)return;
+  const ymin=Math.min(...ys),ymax=Math.max(...ys);const yr=(ymax-ymin)||1;
+  const X=i=>pad.l+(W-pad.l-pad.r)*i/Math.max(n-1,1);const Y=v=>pad.t+(H-pad.t-pad.b)*(1-(v-ymin)/yr);
+  const css=getComputedStyle(document.documentElement);const ink=css.getPropertyValue('--ink').trim(),muted=css.getPropertyValue('--muted').trim(),acc=css.getPropertyValue('--accent').trim(),flag=css.getPropertyValue('--flag').trim();
+  ctx.strokeStyle=muted;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l,H-pad.b);ctx.lineTo(W-pad.r,H-pad.b);ctx.stroke();
+  ctx.fillStyle=muted;ctx.font='12px sans-serif';ctx.textAlign='right';
+  for(let t=0;t<=4;t++){const v=ymin+yr*t/4;ctx.fillText(v.toFixed(2),pad.l-6,Y(v)+4);}
+  ctx.textAlign='center';ctx.fillText(opts.xlabel||'受訪者（依分數排序）',(pad.l+W-pad.r)/2,H-8);
+  if(opts.cutIndex!=null&&opts.cutIndex<n){ctx.fillStyle=flag+'22';ctx.fillRect(pad.l,pad.t,X(opts.cutIndex)-pad.l,H-pad.t-pad.b);
+    ctx.strokeStyle=flag;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(X(opts.cutIndex),pad.t);ctx.lineTo(X(opts.cutIndex),H-pad.b);ctx.stroke();ctx.setLineDash([]);}
+  if(opts.truthSorted){for(let i=0;i<n;i++){if(opts.truthSorted[i]){ctx.fillStyle=flag;ctx.fillRect(X(i)-1,H-pad.b-3,2,3);}}}
+  ctx.strokeStyle=acc;ctx.lineWidth=2;ctx.beginPath();for(let i=0;i<n;i++){i?ctx.lineTo(X(i),Y(ys[i])):ctx.moveTo(X(i),Y(ys[i]));}ctx.stroke();
+  if(opts.kneeIndex!=null){ctx.fillStyle=ink;ctx.beginPath();ctx.arc(X(opts.kneeIndex),Y(ys[opts.kneeIndex]),5,0,Math.PI*2);ctx.fill();ctx.textAlign='left';ctx.fillText('膝點',X(opts.kneeIndex)+8,Y(ys[opts.kneeIndex])-6);}
+  if(opts.truthSorted){ctx.fillStyle=flag;ctx.textAlign='left';ctx.fillText('底部紅點：真實草率者',pad.l+4,pad.t+12);}
+}
+function drawHist(cv,values,groups,opts){
+  const ctx=cv.getContext('2d');const W=cv.width,H=cv.height;ctx.clearRect(0,0,W,H);const pad={l:44,r:14,t:14,b:34};
+  const vals=values.filter(v=>!isNaN(v));if(!vals.length)return;const lo=opts.lo!=null?opts.lo:Math.min(...vals),hi=opts.hi!=null?opts.hi:Math.max(...vals);const nb=opts.bins||24;const bw=(hi-lo)/nb||1;
+  const counts=[new Array(nb).fill(0),new Array(nb).fill(0)];
+  values.forEach((v,i)=>{if(isNaN(v))return;let b=Math.min(nb-1,Math.max(0,Math.floor((v-lo)/bw)));counts[groups[i]?1:0][b]++;});
+  const mx=Math.max(...counts[0].map((c,i)=>c+counts[1][i]))||1;
+  const css=getComputedStyle(document.documentElement);const muted=css.getPropertyValue('--muted').trim(),acc=css.getPropertyValue('--accent').trim(),flag=css.getPropertyValue('--flag').trim();
+  ctx.strokeStyle=muted;ctx.beginPath();ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l,H-pad.b);ctx.lineTo(W-pad.r,H-pad.b);ctx.stroke();
+  const bwpx=(W-pad.l-pad.r)/nb;
+  for(let b=0;b<nb;b++){const h0=(H-pad.t-pad.b)*counts[0][b]/mx,h1=(H-pad.t-pad.b)*counts[1][b]/mx;const x=pad.l+b*bwpx;
+    ctx.fillStyle=acc;ctx.fillRect(x+1,H-pad.b-h0,bwpx-2,h0);ctx.fillStyle=flag;ctx.fillRect(x+1,H-pad.b-h0-h1,bwpx-2,h1);}
+  ctx.fillStyle=muted;ctx.font='12px sans-serif';ctx.textAlign='center';
+  for(let t=0;t<=4;t++){const v=lo+(hi-lo)*t/4;ctx.fillText(v.toFixed(opts.dec==null?2:opts.dec),pad.l+(W-pad.l-pad.r)*t/4,H-pad.b+16);}
+  ctx.fillText(opts.xlabel||'',(pad.l+W-pad.r)/2,H-4);
+  if(opts.cut!=null){const x=pad.l+(W-pad.l-pad.r)*(opts.cut-lo)/(hi-lo||1);ctx.strokeStyle=flag;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(x,pad.t);ctx.lineTo(x,H-pad.b);ctx.stroke();ctx.setLineDash([]);}
+  ctx.textAlign='left';ctx.fillStyle=acc;ctx.fillText('藍：'+(opts.g0||'未標記'),pad.l+4,pad.t+12);ctx.fillStyle=flag;ctx.fillText('紅：'+(opts.g1||'標記'),pad.l+4,pad.t+28);
+}
+
+/* ---------- 資料 ---------- */
+function setData(d){D=d;for(const k in FLAGS)FLAGS[k]=null;
+  $('dataSummary').style.display='block';
+  const n=D.rows.length;const nT=D.hasTruth?D.rows.filter(r=>r.truth).length:null;
+  $('dataKpi').innerHTML=`<div><b>${n}</b><span>受訪者</span></div><div><b>${D.k}</b><span>內容題</span></div><div><b>${D.s}</b><span>量尺選項數</span></div><div><b>${D.rev.length}</b><span>反向題</span></div><div><b>${D.hasRT?'有':'無'}</b><span>題目層級反應時間</span></div><div><b>${D.g}</b><span>亂語題</span></div><div><b>${nT==null?'無':nT+'（'+(100*nT/n).toFixed(1)+'%）'}</b><span>真實草率者</span></div>`;
+  $('dataNote').textContent=`資料來源：${D.source}。可執行：Laz.R、指標組合${D.hasRT?'、混合模型加反應時間':''}${D.g>0?'、GibML':''}。${!D.hasRT?'缺反應時間，取徑三無法執行。':''}${D.g===0?'缺亂語題，取徑四無法執行。':''}`;
+  let h='<thead><tr><th>編號</th><th>作答序列（原始）</th>'+(D.hasTruth?'<th>真實</th>':'')+'</tr></thead><tbody>';
+  D.rows.slice(0,15).forEach(r=>{h+=`<tr class="${r.truth?'truth':''}"><td>${r.id}</td><td class="seq">${seqStr(r.resp)}</td>${D.hasTruth?`<td>${r.truth?'<span class="pill c">草率 '+r.type+'</span>':'<span class="pill a">認真</span>'}</td>`:''}</tr>`;});
+  $('previewTbl').innerHTML=h+'</tbody>';
+  $('lazPct').value=5;runLazR();
+  $('idxPerf').innerHTML='';$('idxResult').innerHTML='<p class="small">尚未計算。</p>';$('idxTbl').innerHTML='';
+  $('fmmResult').innerHTML='<p class="small">尚未估計。</p>';$('fmmTbl').innerHTML='';
+  $('gibResult').innerHTML='<p class="small">尚未訓練。</p>';$('gibTbl').innerHTML='';}
+
+$('btnSim').addEventListener('click',()=>{
+  const o={N:+$('simN').value,k:+$('simK').value,s:+$('simS').value,p:+$('simP').value/100,g:+$('simG').value,nRev:+$('simR').value,partial:+$('simPartial').value/100,seed:$('simSeed').value,
+    weights:{straight:+$('w_straight').value,moving:+$('w_moving').value,diag:+$('w_diag').value,ext:+$('w_ext').value,low:+$('w_low').value,rand:+$('w_rand').value}};
+  setData(CR.simulate(o));});
+
+function downloadCSV(name,rows){const blob=new Blob(['﻿'+rows.map(r=>r.join(',')).join('\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();}
+$('btnDownloadSim').addEventListener('click',()=>{if(!D)return;const head=['id',...Array.from({length:D.k},(_,j)=>'Q'+(j+1)),...(D.hasRT?Array.from({length:D.k},(_,j)=>'RT'+(j+1)):[]),...Array.from({length:D.g},(_,j)=>'G'+(j+1)),...(D.hasTruth?['careless','type']:[])];
+  const rows=[head,...D.rows.map(r=>[r.id,...r.resp,...(D.hasRT?r.rt.map(v=>v.toFixed(2)):[]),...r.gib,...(D.hasTruth?[r.truth,r.type]:[])])];downloadCSV('careless_sim_data.csv',rows);});
+
+// CSV 解析
+let CSV=null;
+function parseCSV(text){const lines=text.replace(/\r/g,'').split('\n').filter(l=>l.trim().length);const parse=l=>{const out=[];let cur='',q=false;for(let i=0;i<l.length;i++){const c=l[i];if(c==='"'){if(q&&l[i+1]==='"'){cur+='"';i++;}else q=!q;}else if(c===','&&!q){out.push(cur);cur='';}else cur+=c;}out.push(cur);return out.map(s=>s.trim());};
+  const header=parse(lines[0]);return {header,rows:lines.slice(1).map(parse)};}
+$('csvFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{CSV=parseCSV(rd.result);
+  const opt=(sel,blank)=>{sel.innerHTML=(blank?'<option value="">（無）</option>':'')+CSV.header.map((h,i)=>`<option value="${i}">${h}</option>`).join('');};
+  opt($('colId'),true);opt($('colItems'),false);opt($('colRT'),false);opt($('colGib'),false);opt($('colTruth'),true);$('csvMap').style.display='block';};rd.readAsText(f);});
+$('btnCsv').addEventListener('click',()=>{if(!CSV)return;const sel=id=>[...$(id).selectedOptions].map(o=>+o.value);
+  const items=sel('colItems'),rts=sel('colRT'),gibs=sel('colGib');const idc=$('colId').value,tc=$('colTruth').value;
+  if(items.length<4){alert('請至少選擇 4 個內容題欄位。');return;}
+  if(rts.length&&rts.length!==items.length){alert('反應時間欄位數量須與內容題相同。');return;}
+  const rows=[];CSV.rows.forEach((r,i)=>{const resp=items.map(j=>+r[j]);if(resp.some(v=>isNaN(v)))return;
+    rows.push({id:idc!==''?r[+idc]:'R'+(i+1),resp,rt:rts.length?rts.map(j=>+r[j]):null,gib:gibs.map(j=>+r[j]).filter(v=>!isNaN(v)),truth:tc!==''?(/^(1|true|yes)$/i.test(r[+tc])?1:0):0,type:''});});
+  if(!rows.length){alert('沒有可用的完整作答列。');return;}
+  let s=+$('csvS').value;if(!s){let mx=0;rows.forEach(r=>r.resp.forEach(v=>{if(v>mx)mx=v;}));s=mx;}
+  const rev=$('csvRev').value.split(',').map(x=>parseInt(x,10)-1).filter(x=>!isNaN(x)&&x>=0&&x<items.length);
+  setData({rows,s,k:items.length,g:gibs.length,rev,hasRT:rts.length>0&&rows.every(r=>r.rt&&!r.rt.some(isNaN)),hasTruth:tc!=='',source:'上傳 CSV'});});
+
+/* ---------- Laz.R ---------- */
+let LAZ=null;
+function runLazR(){if(!D)return;const scores=D.rows.map(r=>CR.lazR(r.resp));const order=scores.map((v,i)=>[v,i]).sort((a,b)=>b[0]-a[0]);
+  const sorted=order.map(p=>p[0]);const kn=CR.knee(sorted);LAZ={scores,order,sorted,knee:kn};
+  $('lazKneeInfo').textContent=`膝點位於第 ${kn+1} 位（前 ${(100*(kn+1)/sorted.length).toFixed(1)}%），該處 Laz.R = ${fmt(sorted[kn],3)}；Biemann et al. 建議膝點左側個案逐案檢視。`;
+  renderLazR();}
+function renderLazR(){if(!LAZ)return;const pct=+$('lazPct').value;$('lazPctLabel').textContent=pct+'%';const n=LAZ.sorted.length;const cut=Math.round(n*pct/100);
+  const truth=truthArr();const flags=new Array(n).fill(false);LAZ.order.slice(0,cut).forEach(p=>flags[p[1]]=true);FLAGS.lazr=flags;
+  drawCurve($('cvLaz'),LAZ.sorted,{cutIndex:cut,kneeIndex:LAZ.knee,truthSorted:truth?LAZ.order.map(p=>truth[p[1]]):null});
+  let h=confHTML(flags,truth,'Laz.R');if(truth)h+=`<p class="small">AUC = ${fmt(CR.auc(LAZ.scores,truth),3)}。切點處 Laz.R = ${fmt(cut>0?LAZ.sorted[cut-1]:NaN,3)}。</p>`;
+  if(truth){const byType={};D.rows.forEach((r,i)=>{if(!r.truth)return;const t=r.type.replace('（部分）','');byType[t]=byType[t]||{n:0,hit:0};byType[t].n++;if(flags[i])byType[t].hit++;});
+    h+='<p class="small">各型態命中率：'+Object.entries(byType).map(([t,v])=>`${t} ${v.hit}/${v.n}`).join('；')+'。</p>';}
+  $('lazResult').innerHTML=h;
+  let t='<thead><tr><th>排名</th><th>編號</th><th>Laz.R</th><th>作答序列</th>'+(truth?'<th>真實</th>':'')+'</tr></thead><tbody>';
+  LAZ.order.slice(0,Math.max(cut,0)).slice(0,60).forEach((p,r)=>{const row=D.rows[p[1]];t+=`<tr class="flag"><td>${r+1}</td><td>${row.id}</td><td>${fmt(p[0],3)}</td><td class="seq">${seqStr(row.resp)}</td>${truth?`<td>${row.truth?'<span class="pill c">草率 '+row.type+'</span>':'<span class="pill a">認真（誤刪）</span>'}</td>`:''}</tr>`;});
+  $('lazTbl').innerHTML=t+'</tbody>'+(cut>60?`<tfoot><tr><td colspan="5" class="small">僅顯示前 60 位。</td></tr></tfoot>`:'');}
+$('lazPct').addEventListener('input',renderLazR);
+$('btnLazKnee').addEventListener('click',()=>{if(!LAZ)return;$('lazPct').value=Math.min(50,(100*(LAZ.knee+1)/LAZ.sorted.length).toFixed(1));renderLazR();});
+
+/* ---------- 指標組合 ---------- */
+const IDX_META={rpr:{name:'RPR 重抽樣個人信度',low:true,family:'個人內一致性'},psychsyn:{name:'PsychSyn 同義題',low:true,family:'個人內一致性'},mahal:{name:'Mahalanobis 距離',low:false,family:'常模距離'},rpbis:{name:'個人總分相關 rpbis',low:true,family:'常模距離'},gnorm:{name:'G normed',low:false,family:'無母數 person-fit'},longstring:{name:'最大 longstring',low:false,family:'反應無變異（不建議）'},irv:{name:'IRV 個人內標準差',low:true,family:'反應無變異（不建議）'}};
+let IDX=null;
+$('btnIdx').addEventListener('click',()=>{if(!D)return;const X=recoded();const pct=+$('idxPct').value/100;const truth=truthArr();
+  const ps=CR.psychsyn(X,+$('synCrit').value);
+  const S={rpr:CR.rpr(X,100),psychsyn:ps.scores,mahal:CR.mahalanobis(X),rpbis:CR.rpbis(X),gnorm:CR.gnormed(X),longstring:X.map(CR.longstring),irv:X.map(CR.irv)};
+  // 一致性類指標對零變異（全卷同一選項）的受訪者無法計算相關，視為最可疑端
+  for(const k of ['rpr','psychsyn','rpbis']){S[k]=S[k].map(v=>isNaN(v)?-1:v);}
+  if(ps.pairs<2)S.psychsyn=S.psychsyn.map(()=>NaN);
+  const F={},CUT={};for(const k in S){const m=IDX_META[k];const cut=CR.quantile(S[k],m.low?pct:1-pct);CUT[k]=cut;F[k]=S[k].map(v=>isNaN(v)?false:(m.low?v<=cut:v>=cut));}
+  IDX={S,F,CUT,pairs:ps.pairs};
+  let h='<thead><tr><th>指標</th><th>族系</th><th>可疑端</th><th>切點</th><th>標記人數</th>'+(truth?'<th>敏感度</th><th>特異度</th><th>AUC</th>':'')+'</tr></thead><tbody>';
+  for(const k in S){const m=IDX_META[k];const nf=F[k].filter(Boolean).length;h+=`<tr><td>${m.name}${k==='psychsyn'?`<br><span class="small">可用題對 ${ps.pairs}${ps.pairs<3?'，少於 3 對，結果僅供參考':''}</span>`:''}</td><td>${m.family}</td><td>${m.low?'低':'高'}</td><td>${fmt(CUT[k],3)}</td><td>${nf}</td>`;
+    if(truth){const c=CR.confusion(F[k],truth);const a=CR.auc(S[k].map(v=>m.low?-v:v),truth);h+=`<td>${fmt(c.sens*100,0)}%</td><td>${fmt(c.spec*100,0)}%</td><td>${fmt(a,3)}</td>`;}h+='</tr>';}
+  $('idxPerf').innerHTML=h+'</tbody>';
+  $('idxPlotSel').innerHTML=Object.keys(S).map(k=>`<option value="${k}">${IDX_META[k].name}</option>`).join('');
+  renderIdxCombo();renderIdxPlot();});
+function renderIdxCombo(){if(!IDX)return;const sel=[...$('idxCombo').selectedOptions].map(o=>o.value);const min=+$('idxMinFlags').value;const truth=truthArr();
+  const counts=D.rows.map((_,i)=>sel.reduce((a,k)=>a+(IDX.F[k][i]?1:0),0));const flags=counts.map(c=>c>=min);FLAGS.idx=flags;
+  let h=`<p class="small">納入：${sel.map(k=>IDX_META[k].name).join('、')}；至少 ${min} 個同時標記。</p>`+confHTML(flags,truth);
+  if(truth){const byType={};D.rows.forEach((r,i)=>{if(!r.truth)return;const t=r.type.replace('（部分）','');byType[t]=byType[t]||{n:0,hit:0};byType[t].n++;if(flags[i])byType[t].hit++;});
+    h+='<p class="small">各型態命中率：'+Object.entries(byType).map(([t,v])=>`${t} ${v.hit}/${v.n}`).join('；')+'。</p>';}
+  $('idxResult').innerHTML=h;
+  const idxs=counts.map((c,i)=>[c,i]).filter(p=>p[0]>=min).sort((a,b)=>b[0]-a[0]).slice(0,60);
+  let t='<thead><tr><th>編號</th><th>旗標數</th><th>被哪些指標標記</th><th>作答序列（反向計分後）</th>'+(truth?'<th>真實</th>':'')+'</tr></thead><tbody>';const X=recoded();
+  idxs.forEach(([c,i])=>{const row=D.rows[i];t+=`<tr class="flag"><td>${row.id}</td><td>${c}</td><td>${sel.filter(k=>IDX.F[k][i]).map(k=>IDX_META[k].name.split(' ')[0]).join('、')}</td><td class="seq">${seqStr(X[i])}</td>${truth?`<td>${row.truth?'<span class="pill c">草率 '+row.type+'</span>':'<span class="pill a">認真（誤刪）</span>'}</td>`:''}</tr>`;});
+  $('idxTbl').innerHTML=t+'</tbody>';}
+function renderIdxPlot(){if(!IDX)return;const k=$('idxPlotSel').value;const m=IDX_META[k];const truth=truthArr();
+  drawHist($('cvIdx'),IDX.S[k],truth||IDX.F[k],{xlabel:m.name+'（'+(m.low?'低':'高')+'可疑）',cut:IDX.CUT[k],g0:truth?'真實認真':'未標記',g1:truth?'真實草率':'標記',dec:k==='longstring'?0:2});}
+['idxCombo','idxMinFlags'].forEach(id=>$(id).addEventListener('change',renderIdxCombo));
+$('idxPlotSel').addEventListener('change',renderIdxPlot);
+
+/* ---------- FMM ---------- */
+$('btnFmm').addEventListener('click',()=>{if(!D)return;if(!D.hasRT){$('fmmResult').innerHTML='<div class="warn">目前資料沒有題目層級反應時間，無法估計。可改用模擬資料，或在 CSV 中提供反應時間欄位。</div>';return;}
+  const X=recoded();const T=D.rows.map(r=>r.rt);const res=CR.fmmEM(X,T,D.s,+$('fmmPi').value,+$('fmmIter').value);const thr=+$('fmmThr').value;const truth=truthArr();
+  const flags=res.post.map(p=>p>=thr);FLAGS.fmm=flags;
+  const meanRT=T.map(r=>CR.mean(r));const mA=[],mC=[];meanRT.forEach((v,i)=>(flags[i]?mC:mA).push(v));
+  let h=`<div class="kpi"><div><b>${fmt(res.pi*100,1)}%</b><span>估計草率比例 π</span></div><div><b>${res.iters}</b><span>EM 迭代次數</span></div><div><b>${fmt(Math.exp(res.tauC),2)} 秒</b><span>草率組每題時間（幾何平均）</span></div><div><b>${fmt(Math.exp(CR.mean(res.tau)),2)} 秒</b><span>注意組每題時間（幾何平均）</span></div></div>`;
+  h+=confHTML(flags,truth);if(truth)h+=`<p class="small">AUC（後驗機率）= ${fmt(CR.auc(res.post,truth),3)}。</p>`;
+  if(truth){const byType={};D.rows.forEach((r,i)=>{if(!r.truth)return;const t=r.type.replace('（部分）','');byType[t]=byType[t]||{n:0,hit:0};byType[t].n++;if(flags[i])byType[t].hit++;});
+    h+='<p class="small">各型態命中率：'+Object.entries(byType).map(([t,v])=>`${t} ${v.hit}/${v.n}`).join('；')+'。原文模型鎖定快速隨機作答；模擬中型態化草率者同樣作答較快，因此簡化版也可能把直線作答者分到草率組，這是時間成分的貢獻，而非作答內容。</p>';}
+  $('fmmResult').innerHTML=h;
+  drawHist($('cvFmm'),meanRT,flags,{xlabel:'每人平均反應時間（秒）',g0:'分類為注意',g1:'分類為草率',dec:1,lo:0,hi:Math.min(CR.quantile(meanRT,0.99)*1.1,30)});
+  const order=res.post.map((p,i)=>[p,i]).sort((a,b)=>b[0]-a[0]).filter(p=>p[0]>=thr).slice(0,60);
+  let t='<thead><tr><th>編號</th><th>後驗草率機率</th><th>平均時間（秒）</th><th>作答序列</th>'+(truth?'<th>真實</th>':'')+'</tr></thead><tbody>';
+  order.forEach(([p,i])=>{const row=D.rows[i];t+=`<tr class="flag"><td>${row.id}</td><td>${fmt(p,3)}</td><td>${fmt(meanRT[i],2)}</td><td class="seq">${seqStr(X[i])}</td>${truth?`<td>${row.truth?'<span class="pill c">草率 '+row.type+'</span>':'<span class="pill a">認真（誤刪）</span>'}</td>`:''}</tr>`;});
+  $('fmmTbl').innerHTML=t+'</tbody>';});
+
+/* ---------- GibML ---------- */
+$('btnGib').addEventListener('click',()=>{if(!D)return;if(!D.g||D.g<2){$('gibResult').innerHTML='<div class="warn">目前資料沒有亂語題（至少 2 題），無法訓練。可改用模擬資料並設定亂語題數，或在 CSV 中指定亂語題欄位。</div>';return;}
+  const X=recoded();const s=D.s;const F=[],y=[];const g=D.g;
+  // 每人的亂語區塊依其內容區段數重複納入，使每位受訪者在兩類中的權重相同
+  D.rows.forEach((r,i)=>{const cs=CR.chunks(X[i],g);cs.forEach(c=>{F.push(CR.patternFeatures(c,s));y.push(0);});const gf=CR.patternFeatures(r.gib,s);for(let t=0;t<cs.length;t++){F.push(gf);y.push(1);}});
+  const model=$('gibModel').value==='lr'?CR.logistic(F,y,600):CR.knn(F,y,+$('gibK').value);
+  const prob=D.rows.map((r,i)=>{const ps=CR.chunks(X[i],g).map(c=>model.predict(CR.patternFeatures(c,s)));return CR.mean(ps);});
+  const thr=+$('gibThr').value;const truth=truthArr();
+  const flags=prob.map(p=>p>=thr);FLAGS.gib=flags;
+  let h=`<div class="kpi"><div><b>${F.length}</b><span>訓練樣本數（內容區段與加權後的亂語區塊）</span></div><div><b>${g}</b><span>區段長度（等於亂語題數）</span></div><div><b>${fmt(CR.quantile(prob,0.5),2)}</b><span>全樣本分數中位數</span></div></div>`+confHTML(flags,truth);
+  if(truth)h+=`<p class="small">以真實標籤計算的 AUC = ${fmt(CR.auc(prob,truth),3)}。</p>`;
+  if(truth){const byType={};D.rows.forEach((r,i)=>{if(!r.truth)return;const t=r.type.replace('（部分）','');byType[t]=byType[t]||{n:0,hit:0};byType[t].n++;if(flags[i])byType[t].hit++;});
+    h+='<p class="small">各型態命中率：'+Object.entries(byType).map(([t,v])=>`${t} ${v.hit}/${v.n}`).join('；')+'。隨機作答者的內容區塊與亂語區塊型態相似，分類器難以區辨，呼應原文對型態組成的依賴。</p>';}
+  $('gibResult').innerHTML=h;
+  drawHist($('cvGib'),prob,truth||flags,{xlabel:'內容量表像亂語的機率',cut:thr,g0:truth?'真實認真':'未標記',g1:truth?'真實草率':'標記',lo:0,hi:1});
+  const order=prob.map((p,i)=>[p,i]).sort((a,b)=>b[0]-a[0]).filter(p=>p[0]>=thr).slice(0,60);
+  let t='<thead><tr><th>編號</th><th>機率</th><th>內容作答</th><th>亂語作答</th>'+(truth?'<th>真實</th>':'')+'</tr></thead><tbody>';
+  order.forEach(([p,i])=>{const row=D.rows[i];t+=`<tr class="flag"><td>${row.id}</td><td>${fmt(p,3)}</td><td class="seq">${seqStr(X[i],25)}</td><td class="seq">${seqStr(row.gib,12)}</td>${truth?`<td>${row.truth?'<span class="pill c">草率 '+row.type+'</span>':'<span class="pill a">認真（誤刪）</span>'}</td>`:''}</tr>`;});
+  $('gibTbl').innerHTML=t+'</tbody>';});
+
+/* ---------- 總表 ---------- */
+function renderSummary(){if(!D){$('sumTbl').innerHTML='';$('sumKpi').innerHTML='<div><b>—</b><span>尚無資料</span></div>';return;}
+  const truth=truthArr();const keys=[['lazr','Laz.R'],['idx','指標組合'],['fmm','混合模型'],['gib','GibML']];const avail=keys.filter(k=>FLAGS[k[0]]);
+  const n=D.rows.length;const any=D.rows.map((_,i)=>avail.some(k=>FLAGS[k[0]][i]));const all=D.rows.map((_,i)=>avail.length>0&&avail.every(k=>FLAGS[k[0]][i]));
+  let kp=`<div><b>${avail.length}</b><span>已執行取徑</span></div><div><b>${any.filter(Boolean).length}</b><span>任一取徑標記</span></div><div><b>${all.filter(Boolean).length}</b><span>全部取徑同時標記</span></div>`;
+  if(truth&&avail.length){const ca=CR.confusion(any,truth),cb=CR.confusion(all,truth);kp+=`<div><b>${fmt(ca.sens*100,0)}% / ${fmt(ca.spec*100,0)}%</b><span>任一標記：敏感度 / 特異度</span></div><div><b>${fmt(cb.sens*100,0)}% / ${fmt(cb.spec*100,0)}%</b><span>全部標記：敏感度 / 特異度</span></div>`;}
+  $('sumKpi').innerHTML=kp;
+  let t='<thead><tr><th>編號</th>'+avail.map(k=>`<th>${k[1]}</th>`).join('')+'<th>旗標數</th><th>作答序列</th>'+(truth?'<th>真實</th>':'')+'</tr></thead><tbody>';
+  const rows=D.rows.map((r,i)=>({r,i,c:avail.reduce((a,k)=>a+(FLAGS[k[0]][i]?1:0),0)})).filter(x=>x.c>0).sort((a,b)=>b.c-a.c).slice(0,150);
+  rows.forEach(({r,i,c})=>{t+=`<tr class="${c?'flag':''}"><td>${r.id}</td>${avail.map(k=>`<td>${FLAGS[k[0]][i]?'標記':''}</td>`).join('')}<td>${c}</td><td class="seq">${seqStr(r.resp,30)}</td>${truth?`<td>${r.truth?'<span class="pill c">草率 '+r.type+'</span>':'<span class="pill a">認真</span>'}</td>`:''}</tr>`;});
+  $('sumTbl').innerHTML=t+'</tbody>'+(rows.length>=150?'<tfoot><tr><td colspan="8" class="small">僅顯示旗標數最高的 150 位。</td></tr></tfoot>':'');}
+$('btnDownloadFlags').addEventListener('click',()=>{if(!D)return;const keys=['lazr','idx','fmm','gib'];const head=['id',...keys,...(D.hasTruth?['truth','type']:[])];
+  const rows=[head,...D.rows.map((r,i)=>[r.id,...keys.map(k=>FLAGS[k]?(FLAGS[k][i]?1:0):''),...(D.hasTruth?[r.truth,r.type]:[])])];downloadCSV('careless_flags.csv',rows);});
+$('btnPlan').addEventListener('click',()=>{const rev=$('plan_rev').value,pairs=$('plan_pairs').value,rt=$('plan_rt').value,gib=$('plan_gib').value,cut=$('plan_cut').value,act=$('plan_act').value;
+  const methods=['Laz.R（型態化作答）'];
+  methods.push(pairs.startsWith('有')?'PsychSyn 或 RPR（隨機與不一致）':'G normed 或 G poly（模型不適配；因無強相關題對，一致性指標不可用）');
+  methods.push('Mahalanobis 距離或 rpbis（常模距離，常模須以認真作答者為主）');
+  if(rt.startsWith('有'))methods.push('混合模型加反應時間（快速隨機作答）');if(gib==='有亂語題')methods.push('GibML（與亂語型態相似者）');if(gib.startsWith('有 8'))methods.push('bogus 題直接測量，與間接指標交叉檢核');
+  const out=`偵測與處理流程草稿
+
+一、資料條件：${rev}；${pairs}；${rt}；${gib}。${rev==='無反向題'?'注意：無反向題時無法區分真實一致與直線作答，且直線作答會使信度膨脹，被標記的高一致性個案需逐案檢視。':''}
+二、指標組合（不同偵測原理各至少一個）：
+${methods.map((m,i)=>'　'+(i+1)+'. '+m).join('\n')}
+三、切點：${cut}。同量尺題目一起計算，不同選項數分開並各自設切點。
+四、逐案檢視：被任一指標標記者先檢視原始作答序列與型態，確認非真實作答後再處置。
+五、處置：${act}。
+六、敏感度分析：比較刪除前後主要結果（相關、迴歸係數、模型適配）；結論若翻轉，兩版皆呈現。
+七、報告：載明指標、切點決定方式、標記與實際刪除人數、處置理由；建議於分析計畫中預先載明。`;
+  $('planOut').textContent=out;});
+
+// 初始：自動產生一份模擬資料
+$('simSeed').value='2026';$('btnSim').click();
+// 由簡報連結開啟時，依網址 #分頁 直接切換（hashTab）
+function hashTab(){const t=location.hash.slice(1);const b=document.querySelector('nav.tabs button[data-tab="'+t+'"]');if(b)b.click();}
+hashTab();addEventListener('hashchange',hashTab);
+</script>
+</body>
+</html>

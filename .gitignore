@@ -1,0 +1,17 @@
+# 只公開白名單內的檔案；其餘資料夾（投稿文件、參考文獻 PDF、產生器、內部紀錄）一律不上傳
+/*
+!/.gitignore
+!/.nojekyll
+!/robots.txt
+!/README.md
+!/index.html
+!/02_簡報/
+/02_簡報/*
+!/02_簡報/TPA2026_工作坊簡報.html
+!/03_互動工具/
+/03_互動工具/*
+!/03_互動工具/careless-sim_草率作答偵測模擬平台.html
+
+# macOS 系統檔
+.DS_Store
+._*
