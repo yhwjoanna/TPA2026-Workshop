@@ -316,38 +316,10 @@ table.m:not(.plain) td:first-child .pill.in{background:rgba(255,255,255,.14);col
 table.m td .pill .tip{display:block;margin:0;color:#fff;font-size:calc(20*var(--u));font-weight:400}
 table.m td .pill .tip b{color:#fff}table.m td .pill .tip i{color:#8FB8F0;display:block}
 @media (max-width:820px),(orientation:portrait) and (max-width:1080px){.pill .tip,table.m td .pill .tip{display:none;max-width:min(78vw,340px)}.pill:hover .tip,.pill:focus .tip{display:block!important}}
-
-#pace{--ph:clamp(24px,calc(1.1vw + 14px),34px);position:fixed;left:0;right:0;top:0;height:var(--ph);z-index:60;display:flex;align-items:center;gap:clamp(6px,.8vw,14px);padding:0 clamp(8px,1vw,16px);background:rgba(10,18,36,.55);color:#DCE7F8;font:500 clamp(10px,calc(.45vw + 5px),14px)/1 var(--sans);letter-spacing:.02em;transition:opacity .2s ease;-webkit-backdrop-filter:blur(10px) saturate(1.4);backdrop-filter:blur(10px) saturate(1.4)}
-#pace.hide{opacity:0;pointer-events:none}
-#pace .trk{position:relative;flex:1;min-width:80px;height:100%}
-#pace .ln{position:absolute;left:0;right:0;bottom:28%;height:2px;background:rgba(255,255,255,.25);border-radius:2px}
-#pace .tick{position:absolute;bottom:calc(28% - 4px);width:1px;height:10px;background:rgba(255,255,255,.45)}
-#pace .tick span{position:absolute;left:4px;bottom:11px;white-space:nowrap;overflow:hidden;text-overflow:clip;font-size:.82em;line-height:1.1;color:rgba(220,231,248,.72)}
-#pace .seg{position:absolute;bottom:calc(28% - 2px);height:6px;background:rgba(143,184,240,.55);border-radius:3px}
-#pace .run{--rs:clamp(14px,calc(1vw + 6px),24px);position:absolute;bottom:calc(28% - 2px);width:var(--rs);height:var(--rs);margin-left:calc(var(--rs) / -2);transition:left .5s linear;color:#8FB8F0}
-#pace.late .run{color:#FF8A96}#pace.late .seg{background:rgba(255,138,150,.5)}
-#pace .run svg{width:100%;height:100%;display:block}
-#pace .run .a{animation:none}#pace.on .run .a{animation:stride .5s steps(1) infinite}#pace.on .run .b{animation:stride .5s steps(1) infinite reverse}
-@keyframes stride{0%{opacity:1}50%{opacity:0}}
-#pace .st{white-space:nowrap;font-weight:700;color:#fff}
-#pace .info{white-space:nowrap;font-variant-numeric:tabular-nums;text-align:right;display:flex;gap:.9em}
-#pace .info b{color:#fff;font-weight:700}
-#pace button{all:unset;cursor:pointer;padding:0 .9em;height:1.9em;line-height:1.9em;border-radius:1em;background:rgba(255,255,255,.14);color:#fff;font-size:1em;font-weight:700;text-align:center;white-space:nowrap}
-#pace button:active{transform:scale(.97)}#pace button:focus-visible{outline:2px solid #8FB8F0}
-@media (max-width:1280px){#pace .i-range{display:none}}
-@media (max-width:900px){#pace .i-lab{display:none}#pace .st{max-width:7em;overflow:hidden;text-overflow:ellipsis}}
-@media (max-width:560px){#pace .st{display:none}#pace .i-tot{display:none}}
-@media (prefers-reduced-motion:reduce){#pace .run{transition:none}#pace.on .run .a,#pace.on .run .b{animation:none}}
-@media (prefers-reduced-transparency:reduce){#pace{background:#0A1224;-webkit-backdrop-filter:none;backdrop-filter:none}}
-@media (max-width:820px),(orientation:portrait) and (max-width:1080px){#pace{background:rgba(10,18,36,.88)}#deck{padding-top:var(--ph)!important}}
 </style>
 </head>
 <body>
-<div id="stage"><div id="pace" role="timer" aria-label="工作坊 75 分鐘配速">
-<span id="pcSt" class="st">全螢幕後開始計時</span><button id="pcRst" type="button" aria-label="計時歸零">歸零</button>
-<div class="trk" id="pcTrk"><div class="ln"></div><div class="seg" id="pcSeg"></div>
-<div class="run" id="pcRun" aria-hidden="true"><svg viewBox="0 0 22 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="3.5" r="2.6" fill="currentColor" stroke="none"/><path d="M12 7l-2 7"/><g class="a"><path d="M10 14l4 4-1 5"/><path d="M10 14l-4 3-3-1"/><path d="M11.5 9l4 2 3-2"/><path d="M11.5 9l-4 1-2 3"/></g><g class="b" style="opacity:0"><path d="M10 14l-1 5-3 3"/><path d="M10 14l3 3 4 0"/><path d="M11.5 9l-3 3"/><path d="M11.5 9l3 3 3 0"/></g></svg></div></div>
-<div class="info" id="pcInfo"></div></div><div id="deck">
+<div id="stage"><div id="deck">
 <section class="slide l-cover" data-layout="cover" data-density="1"><div class="block deco"><div class="n" style="font-size:calc(24*var(--u));letter-spacing:.04em;font-weight:400;line-height:1.35;white-space:nowrap;color:#DCE7F5">2026/10/31（六）<br>13:30–14:45<br>L009</div></div>
 <div class="txt"><div><div class="kicker">第 65 屆台灣心理學會年會　工作坊</div><h1 style="margin-top:28px">問卷研究中<br>草率作答的偵測與處理</h1><div class="en">Detecting and Handling Careless Responding in Survey Research</div></div>
 <div class="who"><b>王豫萱　高健中</b><br>國立中山大學人力資源管理研究所</div></div></section>
@@ -458,47 +430,6 @@ const run=()=>{els.forEach(e=>e.style.removeProperty('font-size'));els.length=0;
 run();mq.addEventListener('change',run);if(document.fonts)document.fonts.ready.then(run);})();
 document.querySelectorAll('.flip').forEach(f=>{f.addEventListener('pointerdown',e=>{e.stopPropagation();f.classList.toggle('on');});f.setAttribute('role','button');f.setAttribute('tabindex','0');f.addEventListener('keydown',e=>{if(e.key==='Enter'){f.classList.toggle('on');}});});
 document.querySelectorAll('.pill').forEach(p=>{const t=p.querySelector('.tip');if(!t)return;const place=()=>{t.style.left='0px';t.classList.remove('below');const sl=p.closest('.slide')||document.body;const s=sl.getBoundingClientRect();const k=(s.width/sl.offsetWidth)||1;const r=t.getBoundingClientRect();let dx=0;if(r.right>s.right-12)dx=(s.right-12-r.right)/k;if(r.left+dx*k<s.left+12)dx=(s.left+12-r.left)/k;t.style.left=dx+'px';if(r.top<s.top+8)t.classList.add('below');};p.addEventListener('pointerenter',place);p.addEventListener('focus',place);});
-
-(function(){
-const SHORT={'開場與問題引入':'開場','概念與型態速覽':'概念','互動一　偵測演練':'互動一','偵測方法總覽':'方法','互動二　決策情境演練':'互動二','總結與問答':'總結'};
-const TOTAL=75, SEC={'開場與問題引入':10,'概念與型態速覽':10,'互動一　偵測演練':15,'偵測方法總覽':10,'互動二　決策情境演練':20,'總結與問答':10};
-const W={'references':0,'closing':3,'statement':0.7,'cover':0.6};
-const sl=[...document.querySelectorAll('.slide')];
-let pv='開場與問題引入';const sec=sl.map(s=>{const f=s.querySelector('.foot span');if(f)pv=f.textContent.trim();return pv;});
-const w=sl.map(s=>{const l=s.dataset.layout;return l in W?W[l]:1;});
-const plan=new Array(sl.length).fill(0);
-Object.keys(SEC).forEach(k=>{const ix=sec.map((x,i)=>x===k?i:-1).filter(i=>i>=0);const tw=ix.reduce((a,i)=>a+w[i],0)||1;ix.forEach(i=>plan[i]=SEC[k]*w[i]/tw);});
-const start=[];plan.reduce((a,m,i)=>{start[i]=a;return a+m;},0);
-const $=id=>document.getElementById(id),P=$('pace'),run=$('pcRun'),seg=$('pcSeg'),info=$('pcInfo'),stEl=$('pcSt'),trk=$('pcTrk');
-let t0=null,acc=0;
-try{const s=JSON.parse(localStorage.getItem('tpaPace')||'null');if(s){acc=s.acc||0;t0=s.t0||null;}}catch(e){}
-const save=()=>{try{localStorage.setItem('tpaPace',JSON.stringify({acc,t0}));}catch(e){}};
-const LIVE0=new Date(2026,9,31,13,30,0).getTime();
-const live=()=>{const d=Date.now()-LIVE0;return d>-90*60000&&d<150*60000;};
-const el=()=>live()?(Date.now()-LIVE0)/60000:(acc+(t0?Date.now()-t0:0))/60000;
-const clk=m=>{const d=new Date(LIVE0+m*60000);return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0');};
-const fmt=m=>{const s=Math.round(Math.abs(m)*60);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
-let last='';Object.keys(SEC).forEach(k=>{const i=sec.indexOf(k);if(i<0)return;const d=document.createElement('div');d.className='tick';d.style.left=(start[i]/TOTAL*100)+'%';d.innerHTML='<span data-l="'+k.replace('　',' ')+'" data-s="'+(SHORT[k]||k)+'">'+k.replace('　',' ')+'</span>';d.dataset.i=i;trk.appendChild(d);});
-const fit=()=>{const tw=trk.clientWidth,ks=Object.keys(SEC).filter(k=>sec.indexOf(k)>=0);[...trk.querySelectorAll('.tick')].forEach((d,j)=>{const k=ks[j];const sp=d.firstChild;const av=(SEC[k]/TOTAL)*tw-8;sp.style.maxWidth=Math.max(0,av)+'px';sp.textContent=sp.dataset.l;if(sp.scrollWidth>av)sp.textContent=sp.dataset.s;sp.style.visibility=sp.scrollWidth>av+1?'hidden':'visible';});};
-addEventListener('resize',fit);setTimeout(fit,50);if(document.fonts)document.fonts.ready.then(fit);
-const MQ=matchMedia('(max-width:820px), (orientation:portrait) and (max-width:1080px)');
-const curIdx=()=>{if(!MQ.matches)return Math.max(0,sl.findIndex(s=>s.classList.contains('on')));let c=0;const y=innerHeight*0.4;sl.forEach((s,i)=>{if(s.getBoundingClientRect().top<y)c=i;});return c;};
-function tick(){const cur=curIdx();const m=el();
- const a=start[cur],b=a+plan[cur];seg.style.left=(a/TOTAL*100)+'%';seg.style.width=Math.max(.3,plan[cur]/TOTAL*100)+'%';
- run.style.left=Math.max(0,Math.min(100,m/TOTAL*100))+'%';
- const late=m>b+0.05, d=m-(m<a?a:(m>b?b:m));P.classList.toggle('late',late);P.classList.toggle('on',!!t0);
- const st=m<0?'尚未開場':(m<a-0.05)?'超前 '+fmt(a-m):(late?'落後 '+fmt(m-b):'配速內');
- info.innerHTML='<span>已用 <b>'+(m<0?'0:00':fmt(m))+'</b><span class="i-tot"> / 75:00</span></span><span><span class="i-lab">本頁配速 </span><b>'+fmt(plan[cur])+'</b><span class="i-range">（預定 '+clk(a)+'–'+clk(b)+'）</span></span><span>'+st+'</span>';
- stEl.textContent=live()?(m<0?'距開場 '+fmt(-m):'現場時鐘 13:30 起'):(t0?'彩排計時中':(m>0?'已暫停，按 T 繼續':'彩排：全螢幕開始'));$('pcRst').style.display=live()?'none':'';}
-const fs=()=>!!(document.fullscreenElement||document.webkitFullscreenElement);
-const onFs=()=>{if(fs()&&!t0&&acc===0){t0=Date.now();save();}tick();};
-document.addEventListener('fullscreenchange',onFs);document.addEventListener('webkitfullscreenchange',onFs);
-
-$('pcRst').addEventListener('pointerdown',e=>{e.stopPropagation();acc=0;t0=null;save();tick();});
-P.addEventListener('pointerdown',e=>e.stopPropagation());P.addEventListener('click',e=>e.stopPropagation());
-addEventListener('keydown',e=>{if(e.key==='t'||e.key==='T'){if(t0){acc+=Date.now()-t0;t0=null;}else t0=Date.now();save();tick();}if(e.key==='p'||e.key==='P')P.classList.toggle('hide');});
-setInterval(tick,500);tick();window.__pacePlan=plan;
-})();
 </script>
 </body>
 </html>
