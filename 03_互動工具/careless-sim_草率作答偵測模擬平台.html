@@ -88,7 +88,7 @@ footer{color:var(--muted);font-size:.82rem;margin-top:30px;border-top:1px solid 
   <button data-tab="data" class="active">一、資料</button>
   <button data-tab="lazr">二、Laz.R 馬可夫鏈</button>
   <button data-tab="idx">三、間接指標組合</button>
-  <button data-tab="fmm">四、混合模型加反應時間</button>
+  <button data-tab="fmm">四、貝氏 FMM 加反應時間</button>
   <button data-tab="gib">五、亂語量表機器學習</button>
   <button data-tab="sum">六、總表與流程草稿</button>
 </nav>
@@ -157,8 +157,8 @@ footer{color:var(--muted);font-size:.82rem;margin-top:30px;border-top:1px solid 
 <!-- ============ Laz.R ============ -->
 <section class="tab" id="tab-lazr">
 <div class="card">
-  <h2>取徑一　Laz.R 一階馬可夫鏈（Biemann et al., 2025）</h2>
-  <p>以作答序列的可預測性量化草率程度：由前一題的作答位置預測下一題。Laz.R 上限為 1（每題都可由前一題完全預測），完全隨機時趨近 1 除以選項數。分數愈高愈可疑。切點依樣本自訂：將 Laz.R 由高至低排序，曲線先陡降後轉平的轉折處即為膝點（kneedle，此處以弦距法求膝點）。</p>
+  <h2>方法一　Laz.R 一階馬可夫鏈（Biemann et al., 2025）</h2>
+  <p>以作答序列的可預測性量化草率程度：由前一題的作答位置預測下一題。Laz.R 上限為 1（每題都可由前一題完全預測），完全隨機時趨近 1 除以選項數。分數愈高愈可能為草率作答。切點依樣本自訂：將 Laz.R 由高至低排序，曲線先陡降後轉平的轉折處即為膝點（kneedle，此處以弦距法求膝點）。</p>
   <div class="note">只對位置性規律有效（直線與各類鋸齒），對隨機作答無偵測力；建議至少 20 題同量尺題目。本分頁使用原始作答（不反向計分），與原文一致。</div>
 </div>
 <div class="grid-2">
@@ -184,7 +184,7 @@ footer{color:var(--muted);font-size:.82rem;margin-top:30px;border-top:1px solid 
 <!-- ============ 指標組合 ============ -->
 <section class="tab" id="tab-idx">
 <div class="card">
-  <h2>取徑二　間接指標的系統性比較與組合（Goldammer et al., 2024）</h2>
+  <h2>方法二　間接指標的系統性比較與組合（Goldammer et al., 2024）</h2>
   <p>計算七個事後間接指標，各自以樣本百分位設切點，再以旗標數組合。Goldammer et al. 的建議配置：個人內一致性至少一個（首選重抽樣個人信度 RPR）、常模式至少一個（Mahalanobis 距離或個人總分相關）、無母數 person-fit 至少一個（G normed）。longstring 與 IRV 列為不建議，此處保留供對照。</p>
   <div class="warn">RPR 與 PsychSyn 為依原文描述的示意實作；Mahalanobis 距離與個人總分相關的常模由全樣本建立，草率比例高時常模受污染。反向題若已指定，本分頁與後續分頁使用反向計分後的資料。</div>
 </div>
@@ -195,13 +195,13 @@ footer{color:var(--muted);font-size:.82rem;margin-top:30px;border-top:1px solid 
     <div><label>組合規則：至少幾個指標同時標記</label><input type="number" id="idxMinFlags" value="2" min="1" max="7"></div>
     <div><label>納入組合的指標</label>
       <select id="idxCombo" multiple style="height:150px">
-        <option value="rpr" selected>RPR 重抽樣個人信度（低可疑）</option>
-        <option value="mahal" selected>Mahalanobis 距離（高可疑）</option>
-        <option value="gnorm" selected>G normed 無母數 person-fit（高可疑）</option>
-        <option value="psychsyn">PsychSyn 同義題（低可疑）</option>
-        <option value="rpbis">個人總分相關 rpbis（低可疑）</option>
-        <option value="longstring">最大 longstring（高可疑）</option>
-        <option value="irv">IRV 個人內標準差（低可疑）</option>
+        <option value="rpr" selected>RPR 重抽樣個人信度（越低越可能草率）</option>
+        <option value="mahal" selected>Mahalanobis 距離（越高越可能草率）</option>
+        <option value="gnorm" selected>G normed 無母數 person-fit（越高越可能草率）</option>
+        <option value="psychsyn">PsychSyn 同義題（越低越可能草率）</option>
+        <option value="rpbis">個人總分相關 rpbis（越低越可能草率）</option>
+        <option value="longstring">最大 longstring（越高越可能草率）</option>
+        <option value="irv">IRV 個人內標準差（越低越可能草率）</option>
       </select></div>
   </div>
   <button class="primary" id="btnIdx">計算指標</button>
@@ -209,7 +209,7 @@ footer{color:var(--muted);font-size:.82rem;margin-top:30px;border-top:1px solid 
 <div class="card">
   <h3>各指標單獨表現</h3>
   <div class="tablewrap"><table id="idxPerf"></table></div>
-  <p class="small">AUC 以 Mann–Whitney 統計量計算，僅在資料含真實標籤時顯示；方向已依各指標的可疑端調整，.5 為隨機水準。</p>
+  <p class="small">AUC 以 Mann–Whitney 統計量計算，僅在資料含真實標籤時顯示；已依各指標的篩選方向調整，.5 為隨機水準。</p>
 </div>
 <div class="grid-2">
   <div class="card"><h3>組合結果</h3><div id="idxResult"></div></div>
@@ -226,9 +226,9 @@ footer{color:var(--muted);font-size:.82rem;margin-top:30px;border-top:1px solid 
 <!-- ============ FMM ============ -->
 <section class="tab" id="tab-fmm">
 <div class="card">
-  <h2>取徑三　混合模型結合反應時間（Zhang et al., 2025）</h2>
-  <p>原文在 CFA 架構內聯合建模作答內容與題目層級反應時間：注意組的作答依單因素模型生成、反應時間依對數常態模型；草率組的作答與時間皆為隨機雜訊，並以 MCMC 估計。核心辨識限制為注意組的時間截距高於草率組（認真作答較慢）。</p>
-  <div class="warn">本分頁為教學用簡化版：以 EM 演算法估計兩類混合模型，注意組的每題作答以常態分布近似（未建模因素結構）、對數反應時間以常態分布建模；草率組的作答為離散均勻分布、時間為較快的常態分布。結果用以體會「作答加時間」的分工邏輯，不等同原文的貝氏估計。需要題目層級反應時間，缺少時無法執行。</div>
+  <h2>方法三　貝氏因素混合模型結合反應時間（Zhang et al., 2025）</h2>
+  <p>原文在 CFA 架構內聯合建模作答內容與題目層級反應時間：認真作答組的作答依單因素模型生成、反應時間依對數常態模型；草率組的作答與時間皆為隨機雜訊，並以 MCMC 估計。核心辨識限制為認真作答組的時間截距高於草率組（認真作答較慢）。</p>
+  <div class="warn">本分頁為教學用簡化版：以 EM 演算法估計兩類混合模型，認真作答組的每題作答以常態分布近似（未建模因素結構）、對數反應時間以常態分布建模；草率組的作答為離散均勻分布、時間為較快的常態分布。結果用以體會「作答加時間」的分工邏輯，不等同原文的貝氏估計。需要題目層級反應時間，缺少時無法執行。</div>
 </div>
 <div class="card">
   <div class="row">
@@ -251,7 +251,7 @@ footer{color:var(--muted);font-size:.82rem;margin-top:30px;border-top:1px solid 
 <!-- ============ GibML ============ -->
 <section class="tab" id="tab-gib">
 <div class="card">
-  <h2>取徑四　亂語量表與機器學習 GibML（Bloy et al., 2025）</h2>
+  <h2>方法四　亂語量表與機器學習 GibML（Bloy et al., 2025）</h2>
   <p>亂語題無法閱讀理解，對其作答必然不基於題意，因此天然構成草率作答的正例標籤。原文將每位受訪者的內容量表作答（標籤 0）與亂語量表作答（標籤 1）一併輸入支持向量機（radial kernel），學習兩者的型態差異後，回頭把內容量表中作答得更像亂語者判為草率。</p>
   <div class="warn">本分頁為簡化版：將內容量表切成與亂語量表等長的區段，以每個區段的型態特徵（平均數、標準差、最長連續、Laz.R、極端與中點比例、相異值數、相鄰差異）訓練 k 最近鄰分類器，再以各區段分數的平均作為個人分數，而非以原始作答訓練 SVM。由於每位草率者的內容區段（標籤 0）與亂語區塊（標籤 1）型態相同，草率者的分數理論上落在 0.5 附近而非接近 1，門檻宜設在 0.3 左右並對照分布圖調整。模擬資料中認真作答者對亂語題的作答設定為偏低或中立（原文質性觀察），草率者則延續其型態。資料若無亂語題則無法執行。</div>
 </div>
@@ -276,8 +276,8 @@ footer{color:var(--muted);font-size:.82rem;margin-top:30px;border-top:1px solid 
 <!-- ============ 總表 ============ -->
 <section class="tab" id="tab-sum">
 <div class="card">
-  <h2>四種取徑的旗標總表</h2>
-  <p>各分頁執行後，此處彙整每位受訪者在四種取徑下的標記情形。四種取徑的偵測原理互補：Laz.R 抓型態化、指標組合抓隨機與不一致、混合模型抓快速隨機、GibML 抓與亂語型態相似者。原則上應先逐案檢視被標記者的原始作答序列，再決定處置。</p>
+  <h2>四種方法的旗標總表</h2>
+  <p>各分頁執行後，此處彙整每位受訪者在四種方法下的標記情形。四種方法的偵測原理互補：Laz.R 偵測型態化、指標組合偵測隨機與不一致、混合模型偵測快速隨機、GibML 偵測與亂語型態相似者。原則上應先逐案檢視被標記者的原始作答序列，再決定處置。</p>
   <div class="kpi" id="sumKpi"></div>
   <div class="tablewrap"><table id="sumTbl"></table></div>
   <button class="ghost" id="btnDownloadFlags">下載旗標總表（CSV）</button>
@@ -496,7 +496,7 @@ function confHTML(flags,truth,label){
   const nf=flags.filter(Boolean).length;
   let h=`<div class="kpi"><div><b>${nf}</b><span>被標記人數（${(100*nf/flags.length).toFixed(1)}%）</span></div>`;
   if(truth){const c=CR.confusion(flags,truth);
-    h+=`<div><b>${fmt(c.sens*100,0)}%</b><span>敏感度（抓到草率）</span></div><div><b>${fmt(c.spec*100,0)}%</b><span>特異度（保住認真）</span></div><div><b>${fmt(c.ppv*100,0)}%</b><span>被標記者中確為草率</span></div></div>`;
+    h+=`<div><b>${fmt(c.sens*100,0)}%</b><span>敏感度（偵測出草率）</span></div><div><b>${fmt(c.spec*100,0)}%</b><span>特異度（保住認真）</span></div><div><b>${fmt(c.ppv*100,0)}%</b><span>被標記者中確為草率</span></div></div>`;
     h+=`<div class="conf"><div class="hd"></div><div class="hd">真實草率</div><div class="hd">真實認真</div><div class="hd">被標記</div><div class="hit">命中 ${c.tp}</div><div class="miss">誤刪 ${c.fp}</div><div class="hd">未標記</div><div class="miss">漏報 ${c.fn}</div><div class="hit">正確保留 ${c.tn}</div></div>`;}
   else h+=`</div><p class="small">資料無真實標籤，僅顯示標記人數。</p>`;
   return h;}
@@ -541,7 +541,7 @@ function setData(d){D=d;for(const k in FLAGS)FLAGS[k]=null;
   $('dataSummary').style.display='block';
   const n=D.rows.length;const nT=D.hasTruth?D.rows.filter(r=>r.truth).length:null;
   $('dataKpi').innerHTML=`<div><b>${n}</b><span>受訪者</span></div><div><b>${D.k}</b><span>內容題</span></div><div><b>${D.s}</b><span>量尺選項數</span></div><div><b>${D.rev.length}</b><span>反向題</span></div><div><b>${D.hasRT?'有':'無'}</b><span>題目層級反應時間</span></div><div><b>${D.g}</b><span>亂語題</span></div><div><b>${nT==null?'無':nT+'（'+(100*nT/n).toFixed(1)+'%）'}</b><span>真實草率者</span></div>`;
-  $('dataNote').textContent=`資料來源：${D.source}。可執行：Laz.R、指標組合${D.hasRT?'、混合模型加反應時間':''}${D.g>0?'、GibML':''}。${!D.hasRT?'缺反應時間，取徑三無法執行。':''}${D.g===0?'缺亂語題，取徑四無法執行。':''}`;
+  $('dataNote').textContent=`資料來源：${D.source}。可執行：Laz.R、指標組合${D.hasRT?'、混合模型加反應時間':''}${D.g>0?'、GibML':''}。${!D.hasRT?'缺反應時間，方法三無法執行。':''}${D.g===0?'缺亂語題，方法四無法執行。':''}`;
   let h='<thead><tr><th>編號</th><th>作答序列（原始）</th>'+(D.hasTruth?'<th>真實</th>':'')+'</tr></thead><tbody>';
   D.rows.slice(0,15).forEach(r=>{h+=`<tr class="${r.truth?'truth':''}"><td>${r.id}</td><td class="seq">${seqStr(r.resp)}</td>${D.hasTruth?`<td>${r.truth?'<span class="pill c">草率 '+r.type+'</span>':'<span class="pill a">認真</span>'}</td>`:''}</tr>`;});
   $('previewTbl').innerHTML=h+'</tbody>';
@@ -607,7 +607,7 @@ $('btnIdx').addEventListener('click',()=>{if(!D)return;const X=recoded();const p
   if(ps.pairs<2)S.psychsyn=S.psychsyn.map(()=>NaN);
   const F={},CUT={};for(const k in S){const m=IDX_META[k];const cut=CR.quantile(S[k],m.low?pct:1-pct);CUT[k]=cut;F[k]=S[k].map(v=>isNaN(v)?false:(m.low?v<=cut:v>=cut));}
   IDX={S,F,CUT,pairs:ps.pairs};
-  let h='<thead><tr><th>指標</th><th>族系</th><th>可疑端</th><th>切點</th><th>標記人數</th>'+(truth?'<th>敏感度</th><th>特異度</th><th>AUC</th>':'')+'</tr></thead><tbody>';
+  let h='<thead><tr><th>指標</th><th>族系</th><th>篩選方向</th><th>切點</th><th>標記人數</th>'+(truth?'<th>敏感度</th><th>特異度</th><th>AUC</th>':'')+'</tr></thead><tbody>';
   for(const k in S){const m=IDX_META[k];const nf=F[k].filter(Boolean).length;h+=`<tr><td>${m.name}${k==='psychsyn'?`<br><span class="small">可用題對 ${ps.pairs}${ps.pairs<3?'，少於 3 對，結果僅供參考':''}</span>`:''}</td><td>${m.family}</td><td>${m.low?'低':'高'}</td><td>${fmt(CUT[k],3)}</td><td>${nf}</td>`;
     if(truth){const c=CR.confusion(F[k],truth);const a=CR.auc(S[k].map(v=>m.low?-v:v),truth);h+=`<td>${fmt(c.sens*100,0)}%</td><td>${fmt(c.spec*100,0)}%</td><td>${fmt(a,3)}</td>`;}h+='</tr>';}
   $('idxPerf').innerHTML=h+'</tbody>';
@@ -624,7 +624,7 @@ function renderIdxCombo(){if(!IDX)return;const sel=[...$('idxCombo').selectedOpt
   idxs.forEach(([c,i])=>{const row=D.rows[i];t+=`<tr class="flag"><td>${row.id}</td><td>${c}</td><td>${sel.filter(k=>IDX.F[k][i]).map(k=>IDX_META[k].name.split(' ')[0]).join('、')}</td><td class="seq">${seqStr(X[i])}</td>${truth?`<td>${row.truth?'<span class="pill c">草率 '+row.type+'</span>':'<span class="pill a">認真（誤刪）</span>'}</td>`:''}</tr>`;});
   $('idxTbl').innerHTML=t+'</tbody>';}
 function renderIdxPlot(){if(!IDX)return;const k=$('idxPlotSel').value;const m=IDX_META[k];const truth=truthArr();
-  drawHist($('cvIdx'),IDX.S[k],truth||IDX.F[k],{xlabel:m.name+'（'+(m.low?'低':'高')+'可疑）',cut:IDX.CUT[k],g0:truth?'真實認真':'未標記',g1:truth?'真實草率':'標記',dec:k==='longstring'?0:2});}
+  drawHist($('cvIdx'),IDX.S[k],truth||IDX.F[k],{xlabel:m.name+'（'+(m.low?'越低':'越高')+'越可能草率）',cut:IDX.CUT[k],g0:truth?'真實認真':'未標記',g1:truth?'真實草率':'標記',dec:k==='longstring'?0:2});}
 ['idxCombo','idxMinFlags'].forEach(id=>$(id).addEventListener('change',renderIdxCombo));
 $('idxPlotSel').addEventListener('change',renderIdxPlot);
 
@@ -633,12 +633,12 @@ $('btnFmm').addEventListener('click',()=>{if(!D)return;if(!D.hasRT){$('fmmResult
   const X=recoded();const T=D.rows.map(r=>r.rt);const res=CR.fmmEM(X,T,D.s,+$('fmmPi').value,+$('fmmIter').value);const thr=+$('fmmThr').value;const truth=truthArr();
   const flags=res.post.map(p=>p>=thr);FLAGS.fmm=flags;
   const meanRT=T.map(r=>CR.mean(r));const mA=[],mC=[];meanRT.forEach((v,i)=>(flags[i]?mC:mA).push(v));
-  let h=`<div class="kpi"><div><b>${fmt(res.pi*100,1)}%</b><span>估計草率比例 π</span></div><div><b>${res.iters}</b><span>EM 迭代次數</span></div><div><b>${fmt(Math.exp(res.tauC),2)} 秒</b><span>草率組每題時間（幾何平均）</span></div><div><b>${fmt(Math.exp(CR.mean(res.tau)),2)} 秒</b><span>注意組每題時間（幾何平均）</span></div></div>`;
+  let h=`<div class="kpi"><div><b>${fmt(res.pi*100,1)}%</b><span>估計草率比例 π</span></div><div><b>${res.iters}</b><span>EM 迭代次數</span></div><div><b>${fmt(Math.exp(res.tauC),2)} 秒</b><span>草率組每題時間（幾何平均）</span></div><div><b>${fmt(Math.exp(CR.mean(res.tau)),2)} 秒</b><span>認真作答組每題時間（幾何平均）</span></div></div>`;
   h+=confHTML(flags,truth);if(truth)h+=`<p class="small">AUC（後驗機率）= ${fmt(CR.auc(res.post,truth),3)}。</p>`;
   if(truth){const byType={};D.rows.forEach((r,i)=>{if(!r.truth)return;const t=r.type.replace('（部分）','');byType[t]=byType[t]||{n:0,hit:0};byType[t].n++;if(flags[i])byType[t].hit++;});
     h+='<p class="small">各型態命中率：'+Object.entries(byType).map(([t,v])=>`${t} ${v.hit}/${v.n}`).join('；')+'。原文模型鎖定快速隨機作答；模擬中型態化草率者同樣作答較快，因此簡化版也可能把直線作答者分到草率組，這是時間成分的貢獻，而非作答內容。</p>';}
   $('fmmResult').innerHTML=h;
-  drawHist($('cvFmm'),meanRT,flags,{xlabel:'每人平均反應時間（秒）',g0:'分類為注意',g1:'分類為草率',dec:1,lo:0,hi:Math.min(CR.quantile(meanRT,0.99)*1.1,30)});
+  drawHist($('cvFmm'),meanRT,flags,{xlabel:'每人平均反應時間（秒）',g0:'分類為認真作答',g1:'分類為草率',dec:1,lo:0,hi:Math.min(CR.quantile(meanRT,0.99)*1.1,30)});
   const order=res.post.map((p,i)=>[p,i]).sort((a,b)=>b[0]-a[0]).filter(p=>p[0]>=thr).slice(0,60);
   let t='<thead><tr><th>編號</th><th>後驗草率機率</th><th>平均時間（秒）</th><th>作答序列</th>'+(truth?'<th>真實</th>':'')+'</tr></thead><tbody>';
   order.forEach(([p,i])=>{const row=D.rows[i];t+=`<tr class="flag"><td>${row.id}</td><td>${fmt(p,3)}</td><td>${fmt(meanRT[i],2)}</td><td class="seq">${seqStr(X[i])}</td>${truth?`<td>${row.truth?'<span class="pill c">草率 '+row.type+'</span>':'<span class="pill a">認真（誤刪）</span>'}</td>`:''}</tr>`;});
@@ -668,7 +668,7 @@ $('btnGib').addEventListener('click',()=>{if(!D)return;if(!D.g||D.g<2){$('gibRes
 function renderSummary(){if(!D){$('sumTbl').innerHTML='';$('sumKpi').innerHTML='<div><b>—</b><span>尚無資料</span></div>';return;}
   const truth=truthArr();const keys=[['lazr','Laz.R'],['idx','指標組合'],['fmm','混合模型'],['gib','GibML']];const avail=keys.filter(k=>FLAGS[k[0]]);
   const n=D.rows.length;const any=D.rows.map((_,i)=>avail.some(k=>FLAGS[k[0]][i]));const all=D.rows.map((_,i)=>avail.length>0&&avail.every(k=>FLAGS[k[0]][i]));
-  let kp=`<div><b>${avail.length}</b><span>已執行取徑</span></div><div><b>${any.filter(Boolean).length}</b><span>任一取徑標記</span></div><div><b>${all.filter(Boolean).length}</b><span>全部取徑同時標記</span></div>`;
+  let kp=`<div><b>${avail.length}</b><span>已執行方法</span></div><div><b>${any.filter(Boolean).length}</b><span>任一方法標記</span></div><div><b>${all.filter(Boolean).length}</b><span>全部方法同時標記</span></div>`;
   if(truth&&avail.length){const ca=CR.confusion(any,truth),cb=CR.confusion(all,truth);kp+=`<div><b>${fmt(ca.sens*100,0)}% / ${fmt(ca.spec*100,0)}%</b><span>任一標記：敏感度 / 特異度</span></div><div><b>${fmt(cb.sens*100,0)}% / ${fmt(cb.spec*100,0)}%</b><span>全部標記：敏感度 / 特異度</span></div>`;}
   $('sumKpi').innerHTML=kp;
   let t='<thead><tr><th>編號</th>'+avail.map(k=>`<th>${k[1]}</th>`).join('')+'<th>旗標數</th><th>作答序列</th>'+(truth?'<th>真實</th>':'')+'</tr></thead><tbody>';

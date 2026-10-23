@@ -13,7 +13,9 @@
 body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.65 "Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif}
 main{max-width:880px;margin:0 auto;padding:56px 16px 64px}
 .k{color:var(--cobalt);font-weight:700;letter-spacing:.12em;font-size:14px}
-h1{color:var(--deep);font-size:clamp(26px,4.4vw,40px);line-height:1.25;margin:10px 0 6px;word-break:keep-all;overflow-wrap:anywhere}
+h1{color:var(--deep);font-size:clamp(26px,4.4vw,40px);line-height:1.25;margin:10px 0 6px;word-break:keep-all;overflow-wrap:anywhere;text-wrap:balance}
+.nw{display:inline-block}
+p,a.card span{text-wrap:pretty}
 .en{color:var(--meta);margin:0 0 28px}
 .meta{color:var(--meta);font-size:15px;margin:0 0 32px}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
@@ -29,14 +31,14 @@ footer{margin-top:40px;color:var(--meta);font-size:14px}
 <body>
 <main>
 <div class="k">第 65 屆台灣心理學會年會　工作坊</div>
-<h1>問卷研究中草率作答的偵測與處理</h1>
+<h1><span class="nw">問卷研究中</span><span class="nw">草率作答的偵測與處理</span></h1>
 <p class="en">Detecting and Handling Careless Responding in Survey Research</p>
-<p class="meta">2026/10/31（六）13:30–14:45　王豫萱、高健中（國立中山大學人力資源管理研究所）</p>
+<p class="meta"><span class="nw">2026/10/31（六）13:30–14:45</span>　<span class="nw">王豫萱、高健中</span><span class="nw">（國立中山大學人力資源管理研究所）</span></p>
 <div class="cards">
-<a class="card" href="02_簡報/TPA2026_工作坊簡報.html"><b>工作坊簡報</b><span>方向鍵翻頁，F 鍵全螢幕；手機自動改為長頁閱讀</span></a>
-<a class="card" href="03_互動工具/careless-sim_草率作答偵測模擬平台.html"><b>草率作答偵測模擬平台</b><span>模擬資料或上傳 CSV，所有運算在本機瀏覽器完成，資料不會上傳</span></a>
+<a class="card" href="02_簡報/TPA2026_工作坊簡報.html"><b>工作坊簡報</b><span><span class="nw">方向鍵翻頁，F 鍵全螢幕；</span><span class="nw">手機改為長頁閱讀</span></span></a>
+<a class="card" href="03_互動工具/careless-sim_草率作答偵測模擬平台.html"><b>草率作答偵測模擬平台</b><span><span class="nw">模擬資料或上傳 CSV；</span><span class="nw">運算在本機瀏覽器完成，</span><span class="nw">資料不上傳</span></span></a>
 </div>
-<footer>參考文獻列於簡報最後三頁。</footer>
+<footer>參考文獻列於簡報最後四頁。</footer>
 </main>
 </body>
 </html>
