@@ -98,7 +98,7 @@ footer{color:var(--muted);font-size:.82rem;margin-top:30px;border-top:1px solid 
 <div class="grid-2">
 <div class="card">
   <h2>模擬資料產生器</h2>
-  <p class="small">產生含真實標籤的作答資料，可用來檢視各方法的命中與誤刪。草率型態的組成依 Biemann et al.（2025）與 Bloy et al.（2025）的分類。</p>
+  <p class="small">產生含真實標籤的作答資料，可用來檢視各方法的命中與誤刪。草率型態參考 Biemann et al.（2025）與 Bloy et al.（2025）的型態分類；快速隨機依 Zhang et al.（2025）的設定，部分草率（僅後段三分之一）依 Goldammer et al.（2024）的實驗操弄。</p>
   <div class="row">
     <div><label>受訪者人數 N</label><input type="number" id="simN" value="300" min="30" max="5000"></div>
     <div><label>內容題數 k</label><input type="number" id="simK" value="30" min="6" max="200"></div>
@@ -159,7 +159,7 @@ footer{color:var(--muted);font-size:.82rem;margin-top:30px;border-top:1px solid 
 <div class="card">
   <h2>方法一　Laz.R 一階馬可夫鏈（Biemann et al., 2025）</h2>
   <p>以作答序列的可預測性量化草率程度：由前一題的作答位置預測下一題。Laz.R 上限為 1（每題都可由前一題完全預測），完全隨機時趨近 1 除以選項數。分數愈高愈可能為草率作答。切點依樣本自訂：將 Laz.R 由高至低排序，曲線先陡降後轉平的轉折處即為膝點（kneedle，此處以弦距法求膝點）。</p>
-  <div class="note">只對位置性規律有效（直線與各類鋸齒），對隨機作答無偵測力；建議至少 20 題同量尺題目。本分頁使用原始作答（不反向計分），與原文一致。</div>
+  <div class="note">只對位置性規律有效（直線與各類鋸齒），對隨機作答無偵測力；建議至少 20 題同量尺題目。本分頁使用原始作答（不反向計分），因為 Laz.R 偵測的是點選位置的規律；原文 Table 4 的示例也是未反向計分的序列。</div>
 </div>
 <div class="grid-2">
   <div class="card">
@@ -185,8 +185,8 @@ footer{color:var(--muted);font-size:.82rem;margin-top:30px;border-top:1px solid 
 <section class="tab" id="tab-idx">
 <div class="card">
   <h2>方法二　間接指標的系統性比較與組合（Goldammer et al., 2024）</h2>
-  <p>計算七個事後間接指標，各自以樣本百分位設切點，再以旗標數組合。Goldammer et al. 的建議配置：個人內一致性至少一個（首選重抽樣個人信度 RPR）、常模式至少一個（Mahalanobis 距離或個人總分相關）、無母數 person-fit 至少一個（G normed）。longstring 與 IRV 列為不建議，此處保留供對照。</p>
-  <div class="warn">RPR 與 PsychSyn 為依原文描述的示意實作；Mahalanobis 距離與個人總分相關的常模由全樣本建立，草率比例高時常模受污染。反向題若已指定，本分頁與後續分頁使用反向計分後的資料。</div>
+  <p>計算七個事後間接指標，各自以樣本百分位設切點，再以旗標數組合；原文以邏輯斯迴歸的預測值組合指標並以 ROC 曲線下面積評估，沒有設定固定切點，本分頁的作法為教學用簡化。Goldammer et al. 的建議配置：個人內一致性至少一個（首選重抽樣個人信度 RPR）、常模式至少一個（Mahalanobis 距離或個人總分相關）、無母數 person-fit 至少一個（G normed 或 Ht）；若只用三個指標，原文建議 RPR、Mahalanobis 距離與 G normed。原文不建議的有 longstring、IRV 與 INDCHI，本分頁保留前兩者供對照。</p>
+  <div class="warn">PsychSyn 依原文定義實作，但題對由全樣本相關矩陣選取，原文指出最好由認真作答者的相關矩陣選取；RPR 為簡化版，原文以至少三個分量表各自隨機分半的分數計算個人內相關並重複，本分頁改用平均數相近的題目配對分半；Mahalanobis 距離與個人總分相關的常模由全樣本建立，草率比例高時常模受污染。反向題若已指定，本分頁與後續分頁使用反向計分後的資料。</div>
 </div>
 <div class="card">
   <div class="row">
@@ -253,7 +253,7 @@ footer{color:var(--muted);font-size:.82rem;margin-top:30px;border-top:1px solid 
 <div class="card">
   <h2>方法四　亂語量表與機器學習 GibML（Bloy et al., 2025）</h2>
   <p>亂語題無法閱讀理解，對其作答必然不基於題意，因此天然構成草率作答的正例標籤。原文將每位受訪者的內容量表作答（標籤 0）與亂語量表作答（標籤 1）一併輸入支持向量機（radial kernel），學習兩者的型態差異後，回頭把內容量表中作答得更像亂語者判為草率。</p>
-  <div class="warn">本分頁為簡化版：將內容量表切成與亂語量表等長的區段，以每個區段的型態特徵（平均數、標準差、最長連續、Laz.R、極端與中點比例、相異值數、相鄰差異）訓練 k 最近鄰分類器，再以各區段分數的平均作為個人分數，而非以原始作答訓練 SVM。由於每位草率者的內容區段（標籤 0）與亂語區塊（標籤 1）型態相同，草率者的分數理論上落在 0.5 附近而非接近 1，門檻宜設在 0.3 左右並對照分布圖調整。模擬資料中認真作答者對亂語題的作答設定為偏低或中立（原文質性觀察），草率者則延續其型態。資料若無亂語題則無法執行。</div>
+  <div class="warn">本分頁為簡化版：將內容量表切成與亂語量表等長的區段，以每個區段的型態特徵（平均數、標準差、最長連續、Laz.R、極端與中點比例、相異值數、相鄰差異）訓練 k 最近鄰分類器，再以各區段分數的平均作為個人分數，而非以原始作答訓練 SVM。由於每位草率者的內容區段（標籤 0）與亂語區塊（標籤 1）型態相同，草率者的分數理論上落在 0.5 附近而非接近 1，門檻宜設在 0.3 左右並對照分布圖調整。模擬資料中，認真作答者對亂語題多給一致的中點或最低選項，參考原文研究二的質性分析（全卷選中點最常見；原文未區分認真與草率者）；草率者則延續其型態。資料若無亂語題則無法執行。</div>
 </div>
 <div class="card">
   <div class="row">
@@ -277,7 +277,7 @@ footer{color:var(--muted);font-size:.82rem;margin-top:30px;border-top:1px solid 
 <section class="tab" id="tab-sum">
 <div class="card">
   <h2>四種方法的旗標總表</h2>
-  <p>各分頁執行後，此處彙整每位受訪者在四種方法下的標記情形。四種方法的偵測原理互補：Laz.R 偵測型態化、指標組合偵測隨機與不一致、混合模型偵測快速隨機、GibML 偵測與亂語型態相似者。原則上應先逐案檢視被標記者的原始作答序列，再決定處置。</p>
+  <p>各分頁執行後，此處彙整每位受訪者在四種方法下的標記情形。四種方法的偵測原理互補：Laz.R 偵測型態化、指標組合偵測隨機與不一致、貝氏 FMM 偵測快速隨機、GibML 偵測與亂語型態相似者。原則上應先逐案檢視被標記者的原始作答序列，再決定處置。</p>
   <div class="kpi" id="sumKpi"></div>
   <div class="tablewrap"><table id="sumTbl"></table></div>
   <button class="ghost" id="btnDownloadFlags">下載旗標總表（CSV）</button>
@@ -306,7 +306,7 @@ footer{color:var(--muted);font-size:.82rem;margin-top:30px;border-top:1px solid 
 </section>
 
 <footer>
-依據文獻：Biemann et al. (2025, ORM)；Goldammer et al. (2024, BRM)；Zhang et al. (2025, BRM)；Bloy et al. (2025, AMPPS)。教學用簡化實作，正式分析請以原文提供的 R、Stata、JAGS 程式碼與 Shiny-CR-App 為準。
+依據文獻：Biemann et al. (2025, ORM)；Goldammer et al. (2024, BRM)；Zhang et al. (2025, BRM)；Bloy et al. (2025, AMPPS)。教學用簡化實作。正式分析請參考原文資源：Biemann et al. 的 ShinyCR_App、Goldammer et al. 公開的分析程式碼、Bloy et al. 於 OSF 提供的亂語資料與 R 程式碼；Zhang et al. 以 JAGS 估計，程式碼取得方式請查正式版。
 </footer>
 </div>
 
@@ -581,7 +581,7 @@ $('btnCsv').addEventListener('click',()=>{if(!CSV)return;const sel=id=>[...$(id)
 let LAZ=null;
 function runLazR(){if(!D)return;const scores=D.rows.map(r=>CR.lazR(r.resp));const order=scores.map((v,i)=>[v,i]).sort((a,b)=>b[0]-a[0]);
   const sorted=order.map(p=>p[0]);const kn=CR.knee(sorted);LAZ={scores,order,sorted,knee:kn};
-  $('lazKneeInfo').textContent=`膝點位於第 ${kn+1} 位（前 ${(100*(kn+1)/sorted.length).toFixed(1)}%），該處 Laz.R = ${fmt(sorted[kn],3)}；Biemann et al. 建議膝點左側個案逐案檢視。`;
+  $('lazKneeInfo').textContent=`膝點位於第 ${kn+1} 位（前 ${(100*(kn+1)/sorted.length).toFixed(1)}%），該處 Laz.R = ${fmt(sorted[kn],3)}；Biemann et al. 建議逐一檢視膝點左側（分數高於切點）的個案，除非有證據顯示該型態來自認真作答，否則予以排除。`;
   renderLazR();}
 function renderLazR(){if(!LAZ)return;const pct=+$('lazPct').value;$('lazPctLabel').textContent=pct+'%';const n=LAZ.sorted.length;const cut=Math.round(n*pct/100);
   const truth=truthArr();const flags=new Array(n).fill(false);LAZ.order.slice(0,cut).forEach(p=>flags[p[1]]=true);FLAGS.lazr=flags;
@@ -597,7 +597,7 @@ $('lazPct').addEventListener('input',renderLazR);
 $('btnLazKnee').addEventListener('click',()=>{if(!LAZ)return;$('lazPct').value=Math.min(50,(100*(LAZ.knee+1)/LAZ.sorted.length).toFixed(1));renderLazR();});
 
 /* ---------- 指標組合 ---------- */
-const IDX_META={rpr:{name:'RPR 重抽樣個人信度',low:true,family:'個人內一致性'},psychsyn:{name:'PsychSyn 同義題',low:true,family:'個人內一致性'},mahal:{name:'Mahalanobis 距離',low:false,family:'常模距離'},rpbis:{name:'個人總分相關 rpbis',low:true,family:'常模距離'},gnorm:{name:'G normed',low:false,family:'無母數 person-fit'},longstring:{name:'最大 longstring',low:false,family:'反應無變異（不建議）'},irv:{name:'IRV 個人內標準差',low:true,family:'反應無變異（不建議）'}};
+const IDX_META={rpr:{name:'RPR 重抽樣個人信度',low:true,family:'個人內一致性'},psychsyn:{name:'PsychSyn 同義題',low:true,family:'個人內一致性'},mahal:{name:'Mahalanobis 距離',low:false,family:'與常模不一致'},rpbis:{name:'個人總分相關 rpbis',low:true,family:'與常模不一致'},gnorm:{name:'G normed',low:false,family:'無母數 person-fit'},longstring:{name:'最大 longstring',low:false,family:'反應無變異（不建議）'},irv:{name:'IRV 個人內標準差',low:true,family:'反應無變異（不建議）'}};
 let IDX=null;
 $('btnIdx').addEventListener('click',()=>{if(!D)return;const X=recoded();const pct=+$('idxPct').value/100;const truth=truthArr();
   const ps=CR.psychsyn(X,+$('synCrit').value);
@@ -656,7 +656,7 @@ $('btnGib').addEventListener('click',()=>{if(!D)return;if(!D.g||D.g<2){$('gibRes
   let h=`<div class="kpi"><div><b>${F.length}</b><span>訓練樣本數（內容區段與加權後的亂語區塊）</span></div><div><b>${g}</b><span>區段長度（等於亂語題數）</span></div><div><b>${fmt(CR.quantile(prob,0.5),2)}</b><span>全樣本分數中位數</span></div></div>`+confHTML(flags,truth);
   if(truth)h+=`<p class="small">以真實標籤計算的 AUC = ${fmt(CR.auc(prob,truth),3)}。</p>`;
   if(truth){const byType={};D.rows.forEach((r,i)=>{if(!r.truth)return;const t=r.type.replace('（部分）','');byType[t]=byType[t]||{n:0,hit:0};byType[t].n++;if(flags[i])byType[t].hit++;});
-    h+='<p class="small">各型態命中率：'+Object.entries(byType).map(([t,v])=>`${t} ${v.hit}/${v.n}`).join('；')+'。隨機作答者的內容區塊與亂語區塊型態相似，分類器難以區辨，呼應原文對型態組成的依賴。</p>';}
+    h+='<p class="small">各型態命中率：'+Object.entries(byType).map(([t,v])=>`${t} ${v.hit}/${v.n}`).join('；')+'。隨機作答者的內容區段與認真作答者相近，而亂語區塊的訓練樣本多為一致性作答，分類器難以辨識隨機作答；呼應原文的提醒：GibML 的表現高度依賴亂語訓練資料的型態多樣性。</p>';}
   $('gibResult').innerHTML=h;
   drawHist($('cvGib'),prob,truth||flags,{xlabel:'內容量表像亂語的機率',cut:thr,g0:truth?'真實認真':'未標記',g1:truth?'真實草率':'標記',lo:0,hi:1});
   const order=prob.map((p,i)=>[p,i]).sort((a,b)=>b[0]-a[0]).filter(p=>p[0]>=thr).slice(0,60);
@@ -666,7 +666,7 @@ $('btnGib').addEventListener('click',()=>{if(!D)return;if(!D.g||D.g<2){$('gibRes
 
 /* ---------- 總表 ---------- */
 function renderSummary(){if(!D){$('sumTbl').innerHTML='';$('sumKpi').innerHTML='<div><b>—</b><span>尚無資料</span></div>';return;}
-  const truth=truthArr();const keys=[['lazr','Laz.R'],['idx','指標組合'],['fmm','混合模型'],['gib','GibML']];const avail=keys.filter(k=>FLAGS[k[0]]);
+  const truth=truthArr();const keys=[['lazr','Laz.R'],['idx','指標組合'],['fmm','貝氏 FMM'],['gib','GibML']];const avail=keys.filter(k=>FLAGS[k[0]]);
   const n=D.rows.length;const any=D.rows.map((_,i)=>avail.some(k=>FLAGS[k[0]][i]));const all=D.rows.map((_,i)=>avail.length>0&&avail.every(k=>FLAGS[k[0]][i]));
   let kp=`<div><b>${avail.length}</b><span>已執行方法</span></div><div><b>${any.filter(Boolean).length}</b><span>任一方法標記</span></div><div><b>${all.filter(Boolean).length}</b><span>全部方法同時標記</span></div>`;
   if(truth&&avail.length){const ca=CR.confusion(any,truth),cb=CR.confusion(all,truth);kp+=`<div><b>${fmt(ca.sens*100,0)}% / ${fmt(ca.spec*100,0)}%</b><span>任一標記：敏感度 / 特異度</span></div><div><b>${fmt(cb.sens*100,0)}% / ${fmt(cb.spec*100,0)}%</b><span>全部標記：敏感度 / 特異度</span></div>`;}
@@ -679,9 +679,9 @@ $('btnDownloadFlags').addEventListener('click',()=>{if(!D)return;const keys=['la
   const rows=[head,...D.rows.map((r,i)=>[r.id,...keys.map(k=>FLAGS[k]?(FLAGS[k][i]?1:0):''),...(D.hasTruth?[r.truth,r.type]:[])])];downloadCSV('careless_flags.csv',rows);});
 $('btnPlan').addEventListener('click',()=>{const rev=$('plan_rev').value,pairs=$('plan_pairs').value,rt=$('plan_rt').value,gib=$('plan_gib').value,cut=$('plan_cut').value,act=$('plan_act').value;
   const methods=['Laz.R（型態化作答）'];
-  methods.push(pairs.startsWith('有')?'PsychSyn 或 RPR（隨機與不一致）':'G normed 或 G poly（模型不適配；因無強相關題對，一致性指標不可用）');
-  methods.push('Mahalanobis 距離或 rpbis（常模距離，常模須以認真作答者為主）');
-  if(rt.startsWith('有'))methods.push('混合模型加反應時間（快速隨機作答）');if(gib==='有亂語題')methods.push('GibML（與亂語型態相似者）');if(gib.startsWith('有 8'))methods.push('bogus 題直接測量，與間接指標交叉檢核');
+  methods.push(pairs.startsWith('有')?'PsychSyn（需至少三對強相關題對）或 RPR（需至少三個分量表），另加 G normed 或 Ht 一個':'G normed 或 Ht（無母數 person-fit）；無強相關題對時同義題指標無法計算，問卷若含至少三個分量表仍可用 RPR');
+  methods.push('Mahalanobis 距離或 rpbis（與常模不一致，常模須以認真作答者為主）');
+  if(rt.startsWith('有'))methods.push('貝氏 FMM 加反應時間（快速隨機作答）');if(gib==='有亂語題')methods.push('GibML（與亂語型態相似者）');if(gib.startsWith('有 8'))methods.push('bogus 題直接測量，與間接指標交叉檢核');
   const out=`偵測與處理流程草稿
 
 一、資料條件：${rev}；${pairs}；${rt}；${gib}。${rev==='無反向題'?'注意：無反向題時無法區分真實一致與直線作答，且直線作答會使信度膨脹，被標記的高一致性個案需逐案檢視。':''}
