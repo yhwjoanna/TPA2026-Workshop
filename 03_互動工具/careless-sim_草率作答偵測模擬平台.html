@@ -75,6 +75,9 @@ footer{color:var(--muted);font-size:.82rem;margin-top:30px;border-top:1px solid 
   .card{padding:13px 14px}
   table{font-size:.82rem}
 }
+.srcbadge{display:inline-block;margin-top:10px;padding:6px 14px;border-radius:999px;font-weight:700;font-size:.95rem}
+.srcbadge.sim{background:var(--warn-soft);color:var(--warn)}
+.srcbadge.up{background:var(--ok-soft);color:var(--ok)}
 </style>
 </head>
 <body>
@@ -82,6 +85,7 @@ footer{color:var(--muted);font-size:.82rem;margin-top:30px;border-top:1px solid 
 <header>
   <h1>草率作答偵測模擬平台</h1>
   <div class="sub">2026 台灣心理學會年會工作坊　問卷研究中草率作答的偵測與處理　配套工具。所有運算在瀏覽器本機完成，資料不會上傳。</div>
+  <div id="srcBadge" class="srcbadge sim">目前資料：模擬資料（由產生器建立，非真實研究資料）</div>
 </header>
 
 <nav class="tabs">
@@ -120,7 +124,7 @@ footer{color:var(--muted);font-size:.82rem;margin-top:30px;border-top:1px solid 
   </div>
   <div class="row">
     <div><label>部分草率（僅後段三分之一）的比例（%）</label><input type="number" id="simPartial" value="25" min="0" max="100"></div>
-    <div><label>隨機種子（留空則每次不同）</label><input type="text" id="simSeed" placeholder="例如 2026"></div>
+    <input type="hidden" id="simSeed" value="">
   </div>
   <button class="primary" id="btnSim">產生模擬資料</button>
 </div>
@@ -550,10 +554,11 @@ function setData(d){D=d;for(const k in FLAGS)FLAGS[k]=null;
   $('fmmResult').innerHTML='<p class="small">尚未估計。</p>';$('fmmTbl').innerHTML='';
   $('gibResult').innerHTML='<p class="small">尚未訓練。</p>';$('gibTbl').innerHTML='';}
 
+function setSrc(sim){const b=$('srcBadge');b.className='srcbadge '+(sim?'sim':'up');b.textContent=sim?'目前資料：模擬資料（由產生器建立，非真實研究資料）':'目前資料：上傳的 CSV 資料';}
 $('btnSim').addEventListener('click',()=>{
   const o={N:+$('simN').value,k:+$('simK').value,s:+$('simS').value,p:+$('simP').value/100,g:+$('simG').value,nRev:+$('simR').value,partial:+$('simPartial').value/100,seed:$('simSeed').value,
     weights:{straight:+$('w_straight').value,moving:+$('w_moving').value,diag:+$('w_diag').value,ext:+$('w_ext').value,low:+$('w_low').value,rand:+$('w_rand').value}};
-  setData(CR.simulate(o));});
+  setData(CR.simulate(o));setSrc(true);});
 
 function downloadCSV(name,rows){const blob=new Blob(['﻿'+rows.map(r=>r.join(',')).join('\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();}
 $('btnDownloadSim').addEventListener('click',()=>{if(!D)return;const head=['id',...Array.from({length:D.k},(_,j)=>'Q'+(j+1)),...(D.hasRT?Array.from({length:D.k},(_,j)=>'RT'+(j+1)):[]),...Array.from({length:D.g},(_,j)=>'G'+(j+1)),...(D.hasTruth?['careless','type']:[])];
@@ -575,7 +580,7 @@ $('btnCsv').addEventListener('click',()=>{if(!CSV)return;const sel=id=>[...$(id)
   if(!rows.length){alert('沒有可用的完整作答列。');return;}
   let s=+$('csvS').value;if(!s){let mx=0;rows.forEach(r=>r.resp.forEach(v=>{if(v>mx)mx=v;}));s=mx;}
   const rev=$('csvRev').value.split(',').map(x=>parseInt(x,10)-1).filter(x=>!isNaN(x)&&x>=0&&x<items.length);
-  setData({rows,s,k:items.length,g:gibs.length,rev,hasRT:rts.length>0&&rows.every(r=>r.rt&&!r.rt.some(isNaN)),hasTruth:tc!=='',source:'上傳 CSV'});});
+  setData({rows,s,k:items.length,g:gibs.length,rev,hasRT:rts.length>0&&rows.every(r=>r.rt&&!r.rt.some(isNaN)),hasTruth:tc!=='',source:'上傳 CSV'});setSrc(false);});
 
 /* ---------- Laz.R ---------- */
 let LAZ=null;
@@ -695,7 +700,7 @@ ${methods.map((m,i)=>'　'+(i+1)+'. '+m).join('\n')}
   $('planOut').textContent=out;});
 
 // 初始：自動產生一份模擬資料
-$('simSeed').value='2026';$('btnSim').click();
+$('simSeed').value='2026';$('btnSim').click();$('simSeed').value='';
 // 由簡報連結開啟時，依網址 #分頁 直接切換（hashTab）
 function hashTab(){const t=location.hash.slice(1);const b=document.querySelector('nav.tabs button[data-tab="'+t+'"]');if(b)b.click();}
 hashTab();addEventListener('hashchange',hashTab);
