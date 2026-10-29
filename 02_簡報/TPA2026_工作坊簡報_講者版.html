@@ -458,6 +458,21 @@ ol.astep li.cur b{color:var(--deep)}ol.astep li.cur::before{color:var(--cobalt)}
 }
 @media (max-width:820px),(orientation:portrait) and (max-width:1080px){.slide{padding:32px 20px 40px}}
 
+#bar .pg{cursor:pointer;border-radius:999px;padding:9px 10px}#bar .pg:hover{background:rgba(20,50,100,.08)}
+#bar .pg:focus-visible{outline:2px solid #1E5BC6;outline-offset:2px}
+#scrub{position:absolute;left:50%;bottom:calc(100% + 12px);transform:translateX(-50%);width:min(760px,92vw);padding:14px 20px 12px;border-radius:16px;background:rgba(255,255,255,.97);box-shadow:0 14px 36px rgba(10,20,40,.28);border:1px solid rgba(20,50,100,.14);display:none;text-align:left}
+#scrub.on{display:block}
+#scrub .sl{font:600 15px/1.45 var(--sans);color:#0F2A5C;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#scrub .sl small{font-weight:500;color:#5E6F88;margin-right:10px;font-size:13px}
+#scrub input[type=range]{display:block;width:100%;margin:0;accent-color:#1E5BC6;cursor:grab;height:26px}
+#scrub input[type=range]:active{cursor:grabbing}
+#scrub .tk{position:relative;height:16px;margin:2px 8px 0}
+#scrub .tk i{position:absolute;top:0;width:2px;height:8px;background:#9DB9DE;transform:translateX(-1px)}
+#scrub .tk i.s{height:14px;background:#1E5BC6}
+#scrub .hint{font:12px/1.4 var(--sans);color:#5E6F88;margin-top:4px}
+#bar .pg.jump{color:#1E5BC6;font-weight:700}
+@media (prefers-reduced-transparency:reduce){#scrub{background:#fff}}
+
 .qrbox{position:absolute;left:72px;top:150px;width:330px;z-index:4;cursor:zoom-in;border:0;padding:0;background:none;text-align:left;font:inherit;color:inherit}
 .qrbox .qcard{background:#fff;border-radius:22px;padding:22px;box-shadow:0 18px 40px rgba(6,20,60,.28);transition:transform .12s ease}
 .qrbox:hover .qcard{transform:translateY(-2px)}.qrbox:active .qcard{transform:scale(.97)}
@@ -629,6 +644,39 @@ const deck=document.getElementById('deck'),slides=[...document.querySelectorAll(
 let cur=0;const mq=matchMedia('(max-width:820px), (orientation:portrait) and (max-width:1080px)');
 function fit(){if(mq.matches)return;const s=Math.min(innerWidth/1920,innerHeight/1080);deck.style.setProperty('--s',s);deck.style.setProperty('--tx',((innerWidth-1920*s)/2)+'px');deck.style.setProperty('--ty',((innerHeight-1080*s)/2)+'px');}
 function go(i){cur=Math.max(0,Math.min(slides.length-1,i));slides.forEach((s,k)=>s.classList.toggle('on',k===cur));pg.textContent=(cur+1)+' / '+slides.length;history.replaceState(null,'','#'+(cur+1));}function nav(d){const s=slides[cur];const n=+(s.dataset.steps||0);if(n&&!mq.matches){const k=+(s.dataset.step||1);if(d>0&&k<n){window.__animStep(s,k+1);return;}if(d<0&&k>1){window.__animStep(s,k-1);return;}}const o=cur;go(cur+d);if(cur!==o){const t=slides[cur];const m=+(t.dataset.steps||0);if(m&&window.__animStep)window.__animStep(t,d>0?1:m);}}
+(function(){
+const bar=document.getElementById('bar');if(!bar)return;const n=slides.length;
+const clean=t=>(t||'').replace(/\s+/g,' ').trim();
+const ttl=slides.map(s=>{const h=s.querySelector('h1,h2');if(h)return clean(h.textContent);const q=s.querySelector('.qq p');return q?clean(q.textContent):'';});
+let pv='開場與問題引入';const sec=slides.map(s=>{const f=s.querySelector('.foot span');if(f)pv=clean(f.textContent);return pv;});
+const sc=document.createElement('div');sc.id='scrub';sc.setAttribute('role','dialog');sc.setAttribute('aria-label','快速換頁');
+let tk='';sec.forEach((v,i)=>{const L=n>1?i/(n-1)*100:0;const st=i===0||v!==sec[i-1];tk+='<i class="'+(st?'s':'')+'" style="left:'+L+'%" title="'+(st?v:'')+'"></i>';});
+sc.innerHTML='<div class="sl" id="scL"></div><input type="range" id="scR" min="1" max="'+n+'" step="1" aria-label="拖曳換頁"><div class="tk">'+tk+'</div><div class="hint">拖曳滑桿快速換頁；深色刻度為各段起點。也可直接輸入頁碼後按 Enter，G 鍵開關，Esc 關閉</div>';
+bar.appendChild(sc);
+const R=sc.querySelector('#scR'),L=sc.querySelector('#scL');
+const upd=i=>{L.innerHTML='<small>第 '+i+' 張　'+sec[i-1]+'</small>'+ttl[i-1];};
+const open=()=>{R.value=cur+1;upd(cur+1);sc.classList.add('on');R.focus();};
+const close=()=>{sc.classList.remove('on');};
+const toggle=()=>sc.classList.contains('on')?close():open();
+R.addEventListener('input',()=>{const i=+R.value;upd(i);go(i-1);});
+R.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Escape'||e.key==='Enter'){e.preventDefault();close();}});
+['touchstart','touchend','wheel','pointerdown'].forEach(t=>sc.addEventListener(t,e=>e.stopPropagation(),{passive:true}));
+const pgEl=document.getElementById('pg');pgEl.setAttribute('role','button');pgEl.setAttribute('tabindex','0');pgEl.setAttribute('aria-label','快速換頁');pgEl.title='點一下開啟快速換頁（G）';
+pgEl.addEventListener('pointerdown',e=>{e.stopPropagation();toggle();});
+pgEl.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.stopPropagation();toggle();}});
+document.addEventListener('pointerdown',e=>{if(sc.classList.contains('on')&&!bar.contains(e.target))close();});
+let buf='',bt=null;const showBuf=()=>{pgEl.textContent=buf?('跳至 '+buf):((cur+1)+' / '+n);pgEl.classList.toggle('jump',!!buf);};
+addEventListener('keydown',e=>{
+ if(e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.isContentEditable))return;
+ if(e.metaKey||e.ctrlKey||e.altKey)return;
+ if(e.key==='g'||e.key==='G'){e.preventDefault();toggle();return;}
+ if(e.key==='Escape'&&sc.classList.contains('on')){close();return;}
+ if(/^[0-9]$/.test(e.key)){buf=(buf+e.key).slice(-3);showBuf();clearTimeout(bt);bt=setTimeout(()=>{buf='';showBuf();},2500);return;}
+ if(e.key==='Enter'&&buf){e.preventDefault();e.stopImmediatePropagation();const k=Math.max(1,Math.min(n,parseInt(buf,10)));buf='';clearTimeout(bt);go(k-1);showBuf();if(sc.classList.contains('on')){R.value=k;upd(k);}}
+ if(e.key==='Backspace'&&buf){buf=buf.slice(0,-1);showBuf();}
+});
+})();
+
 addEventListener('resize',fit);mq.addEventListener('change',()=>{fit();});
 addEventListener('keydown',e=>{if(mq.matches)return;if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){e.preventDefault();nav(1);}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();nav(-1);}else if(e.key==='Home')go(0);else if(e.key==='End')go(slides.length-1);else if(e.key==='f'||e.key==='F')toggleFS();});
 let wl=0;addEventListener('wheel',e=>{if(mq.matches)return;const t=Date.now();if(t-wl<400)return;wl=t;nav(e.deltaY>0?1:-1);},{passive:true});
