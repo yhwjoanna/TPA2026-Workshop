@@ -90,7 +90,7 @@ footer{color:var(--muted);font-size:.82rem;margin-top:30px;border-top:1px solid 
 
 <nav class="tabs">
   <button data-tab="data" class="active">一、資料</button>
-  <button data-tab="lazr">二、Laz.R 馬可夫鏈</button>
+  <button data-tab="lazr">二、Laz.R 指標</button>
   <button data-tab="idx">三、間接指標組合</button>
   <button data-tab="fmm">四、貝氏 FMM 加反應時間</button>
   <button data-tab="gib">五、亂語量表機器學習</button>
@@ -160,7 +160,7 @@ footer{color:var(--muted);font-size:.82rem;margin-top:30px;border-top:1px solid 
 <!-- ============ Laz.R ============ -->
 <section class="tab" id="tab-lazr">
 <div class="card">
-  <h2>方法一　Laz.R 一階馬可夫鏈（Biemann et al., 2025）</h2>
+  <h2>方法一　Laz.R 指標：以一階馬可夫鏈計算（Biemann et al., 2025）</h2>
   <p>以作答序列的可預測性量化草率程度：由前一題的作答位置預測下一題。Laz.R 上限為 1（每題都可由前一題完全預測），完全隨機時趨近 1 除以選項數。分數愈高愈可能為草率作答。切點依樣本自訂：將 Laz.R 由高至低排序，曲線先陡降後轉平的轉折處即為膝點（kneedle，此處以弦距法求膝點）。</p>
   <div class="note">只對位置性規律有效（直線與各類鋸齒），對隨機作答無偵測力；建議至少 20 題同量尺題目。本分頁使用原始作答（不反向計分），因為 Laz.R 偵測的是點選位置的規律；原文 Table 4 的示例也是未反向計分的序列。</div>
 </div>
